@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RO Item Lookup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef2f8; --panel:#ffffff; --bar:#3d5f94; --bar-text:#ffffff;
+  --text:#1c2433; --muted:#5b6679; --line:#d6deea; --row:#f6f8fc;
+  --zeny:#8a6300; --focus:#2f6fd6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141a24; --panel:#1c2432; --bar:#2c4670; --bar-text:#eef3fb;
+    --text:#e4e9f2; --muted:#9aa6ba; --line:#2e3a4e; --row:#212b3b;
+    --zeny:#e0b64a; --focus:#7aa7ff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141a24; --panel:#1c2432; --bar:#2c4670; --bar-text:#eef3fb;
+  --text:#e4e9f2; --muted:#9aa6ba; --line:#2e3a4e; --row:#212b3b;
+  --zeny:#e0b64a; --focus:#7aa7ff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45}
+.wrap{max-width:960px;margin:0 auto;padding:20px 14px 40px}
+.win{background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.title{background:var(--bar);color:var(--bar-text);padding:10px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.title h1{margin:0;font-size:18px}
+.title span{font-size:13px;opacity:.85}
+.controls{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+input,select,button{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:7px 9px}
+input:focus,select:focus,button:focus-visible,th button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.info{padding:8px 16px;font-size:13px;color:var(--muted)}
+.tablebox{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{text-align:left;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);padding:0}
+th button{all:unset;cursor:pointer;display:block;width:100%;padding:8px 12px;box-sizing:border-box}
+th.num button,td.num{text-align:right}
+td{padding:7px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td.name{white-space:normal}
+tbody tr:nth-child(even){background:var(--row)}
+td.sell{color:var(--zeny);font-weight:700}
+.empty{padding:28px 16px;text-align:center;color:var(--muted)}
+.pager{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;gap:10px}
+.pager button{cursor:pointer}
+.pager button:disabled{opacity:.4;cursor:default}
+.note{font-size:12px;color:var(--muted);margin-top:12px;padding:0 4px}
+@media (max-width:640px){.controls{grid-template-columns:1fr 1fr}.controls label:first-child{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="win">
+    <div class="title"><h1>Item lookup</h1><span>rAthena renewal data, built __DATE__</span></div>
+    <div class="controls">
+      <label>Name or ID<input id="q" type="search" placeholder="e.g. potion, 501" autocomplete="off"></label>
+      <label>Type<select id="type"></select></label>
+      <label>Sell price at least<input id="min" type="number" min="0" step="1000" placeholder="0"></label>
+    </div>
+    <div class="info" id="info"></div>
+    <div class="tablebox">
+      <table>
+        <thead><tr>
+          <th class="num"><button data-k="0">ID</button></th>
+          <th><button data-k="1">Name</button></th>
+          <th><button data-k="2">Type</button></th>
+          <th class="num"><button data-k="3">Weight</button></th>
+          <th class="num"><button data-k="4">Sell price</button></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="empty" hidden>No items match. Try a shorter name or set Type to All.</div>
+    <div class="pager">
+      <button id="prev">Previous</button><span id="page"></span><button id="next">Next</button>
+    </div>
+  </div>
+  <p class="note">Sell price is what an NPC pays, before the Overcharge skill. If the data has no sell price, it uses half the buy price. 0 means no price is set. Prices follow official kRO, so your server may differ.</p>
+</div>
+<script>
+const ITEMS=__DATA__;
+const TYPE_NAMES={Healing:"Healing",Usable:"Usable",DelayConsume:"Delayed use",Etc:"Etc",Armor:"Armor",Weapon:"Weapon",Card:"Card",PetEgg:"Pet egg",PetArmor:"Pet armor",Ammo:"Ammo",ShadowGear:"Shadow gear",Cash:"Cash shop"};
+const PER=100;
+const $=id=>document.getElementById(id);
+const q=$("q"),typeSel=$("type"),minIn=$("min");
+let sortKey=0,sortDir=1,page=0,list=[];
+const counts={};ITEMS.forEach(r=>counts[r[2]]=(counts[r[2]]||0)+1);
+typeSel.innerHTML='<option value="">All ('+ITEMS.length.toLocaleString()+')</option>'+
+  Object.keys(counts).sort((a,b)=>(TYPE_NAMES[a]||a).localeCompare(TYPE_NAMES[b]||b))
+  .map(t=>'<option value="'+t+'">'+(TYPE_NAMES[t]||t)+' ('+counts[t].toLocaleString()+')</option>').join("");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function run(){
+  const s=q.value.trim().toLowerCase(),t=typeSel.value,m=parseInt(minIn.value,10)||0;
+  const isId=/^\d+$/.test(s);
+  list=ITEMS.filter(r=>(!t||r[2]===t)&&r[4]>=m&&(!s||(isId?String(r[0]).startsWith(s):r[1].toLowerCase().includes(s))));
+  list.sort((a,b)=>{const x=a[sortKey],y=b[sortKey];return (typeof x==="string"?x.localeCompare(y):x-y)*sortDir||a[0]-b[0]});
+  page=0;draw();
+}
+function draw(){
+  const pages=Math.max(1,Math.ceil(list.length/PER));
+  const slice=list.slice(page*PER,page*PER+PER);
+  $("rows").innerHTML=slice.map(r=>'<tr><td class="num">'+r[0]+'</td><td class="name">'+esc(r[1])+'</td><td>'+(TYPE_NAMES[r[2]]||r[2])+'</td><td class="num">'+(r[3]/10).toLocaleString()+'</td><td class="num sell">'+r[4].toLocaleString()+' z</td></tr>').join("");
+  $("empty").hidden=list.length>0;
+  $("info").textContent=list.length.toLocaleString()+" items found";
+  $("page").textContent="Page "+(page+1)+" of "+pages;
+  $("prev").disabled=page===0;$("next").disabled=page>=pages-1;
+  document.querySelectorAll("th button").forEach(b=>{const k=+b.dataset.k;b.textContent=b.textContent.replace(/ [▲▼]$/,"")+(k===sortKey?(sortDir>0?" ▲":" ▼"):"")});
+}
+let timer;q.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(run,150)});
+typeSel.addEventListener("change",run);minIn.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(run,200)});
+document.querySelectorAll("th button").forEach(b=>b.addEventListener("click",()=>{const k=+b.dataset.k;if(k===sortKey)sortDir=-sortDir;else{sortKey=k;sortDir=(k===4||k===3)?-1:1}run()}));
+$("prev").onclick=()=>{page--;draw();window.scrollTo(0,0)};
+$("next").onclick=()=>{page++;draw();window.scrollTo(0,0)};
+run();
+</script>
+</body>
+</html>

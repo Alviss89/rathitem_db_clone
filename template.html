@@ -67,7 +67,10 @@ tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
 .drops{width:100%;font-size:14px;table-layout:fixed}
 .drops .c-id{width:64px}.drops .c-mob{width:34%}.drops .c-lv{width:64px}.drops .c-rate{width:76px}
 .drops td.mob{white-space:normal}
-.drops td.mid{color:var(--muted)}
+.drops td.mid .map{margin:0;font-variant-numeric:tabular-nums}
+.drops td.mob a{color:inherit;text-decoration:none}
+.drops td.mob a:hover{text-decoration:underline;color:var(--focus)}
+.drops td.mob a:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 .drops th{padding:4px 8px;border-bottom:1px solid var(--line)}
 .drops th.num{text-align:right}
 .drops td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
@@ -150,7 +153,7 @@ function dropTable(id){
   return '<table class="drops"><colgroup><col class="c-id"><col class="c-mob"><col class="c-lv"><col class="c-rate"><col></colgroup><thead><tr><th class="num">ID</th><th>Monster</th><th class="num">Level</th><th class="num">Rate</th><th>Maps</th></tr></thead><tbody>'+
     rows.filter(([mid,rate,kind])=>{const k=MOBS[mid][0]+'|'+MOBS[mid][1]+'|'+rate+'|'+kind+'|'+JSON.stringify(MOBS[mid][3]);return seen.has(k)?false:seen.add(k)}).map(([mid,rate,kind])=>{const m=MOBS[mid];
       const maps=m[3].length?m[3].map(([map,n])=>'<button class="map" data-warp="'+esc(map)+'" title="Copy @warp '+esc(map)+'">'+esc(map)+' (x'+n+')</button>').join(""):"No normal spawn";
-      return '<tr><td class="num mid">'+mid+'</td><td class="mob">'+esc(m[0])+(kind?'<span class="tag">MVP reward</span>':m[2]?'<span class="tag">MVP</span>':'')+'</td><td class="num">'+m[1]+'</td><td class="num">'+pct(rate)+'</td><td class="maps">'+maps+'</td></tr>'}).join("")+
+      return '<tr><td class="num mid"><button class="map" data-mi="'+mid+'" title="Copy @mi '+mid+'">'+mid+'</button></td><td class="mob"><a href="https://www.divine-pride.net/database/monster/'+mid+'" target="_blank" rel="noopener">'+esc(m[0])+'</a>'+(kind?'<span class="tag">MVP reward</span>':m[2]?'<span class="tag">MVP</span>':'')+'</td><td class="num">'+m[1]+'</td><td class="num">'+pct(rate)+'</td><td class="maps">'+maps+'</td></tr>'}).join("")+
     '</tbody></table>';
 }
 function draw(){
@@ -182,7 +185,7 @@ async function copy(text){
 $("rows").addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.drop){const id=+b.dataset.drop,was=open.has(id);open.clear();if(!was)open.add(id);draw()}
-  const text=b.dataset.warp?"@warp "+b.dataset.warp:b.dataset.copy?"@alootid +"+b.dataset.copy:null;
+  const text=b.dataset.mi?"@mi "+b.dataset.mi:b.dataset.warp?"@warp "+b.dataset.warp:b.dataset.copy?"@alootid +"+b.dataset.copy:null;
   if(text){const ok=await copy(text);flash(b,ok?"Copied: "+text:"Copy failed")}
 });
 let timer;q.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(run,150)});

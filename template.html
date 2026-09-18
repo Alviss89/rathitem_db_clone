@@ -69,6 +69,9 @@ tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
 .drops th.num{text-align:right}
 .drops td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 .drops td.maps{white-space:normal;color:var(--muted)}
+.map{font-size:13px;color:var(--muted);background:transparent;border:1px solid transparent;border-radius:4px;padding:1px 6px;margin:0 4px 2px 0;cursor:pointer}
+.map:hover{color:var(--focus);border-color:var(--line)}
+.map.done{color:var(--zeny);border-color:var(--zeny)}
 .tag{font-size:11px;font-weight:700;color:var(--mvp);border:1px solid var(--mvp);border-radius:3px;padding:0 4px;margin-left:6px}
 .empty{padding:28px 16px;text-align:center;color:var(--muted)}
 .pager{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;gap:10px;border-radius:0 0 6px 6px}
@@ -110,7 +113,9 @@ tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
       <button id="prev">Previous</button><span id="page"></span><button id="next">Next</button>
     </div>
   </div>
-  <p class="note">Created for fun by Alviss 2026. Visit <a href="https://rockragnarok.com/" target="_blank" rel="noopener" data-goatcounter-click="rockmmo-link">RockMMO</a>.</p>
+  <p class="note">Created for fun by Alviss 2026.<br>
+  Visit RockMMO here: <a href="https://rockragnarok.com/" target="_blank" rel="noopener" data-goatcounter-click="rockmmo-link">rockragnarok.com</a><br>
+  Visit RockMMO wiki here: <a href="https://rockragnarok.com/rockwiki/Main_Page" target="_blank" rel="noopener" data-goatcounter-click="rockmmo-wiki-link">rockragnarok.com/rockwiki</a></p>
 </div>
 <script>
 const DB=__DATA__;
@@ -126,7 +131,7 @@ typeSel.innerHTML='<option value="">All ('+ITEMS.length.toLocaleString()+')</opt
   Object.keys(counts).sort((a,b)=>(TYPE_NAMES[a]||a).localeCompare(TYPE_NAMES[b]||b))
   .map(t=>'<option value="'+t+'">'+(TYPE_NAMES[t]||t)+' ('+counts[t].toLocaleString()+')</option>').join("");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const pct=r=>{const p=r/100;return (p>=1?p.toFixed(2).replace(/\.?0+$/,""):p.toFixed(2))+"%"};
+const pct=r=>(r/100).toFixed(2).replace(/\.?0+$/,"")+"%";
 function run(){
   const s=q.value.trim().toLowerCase(),t=typeSel.value,m=parseInt(minIn.value,10)||0,d=dropOnly.checked;
   const isId=/^\d+$/.test(s);
@@ -139,7 +144,7 @@ function dropTable(id){
   const seen=new Set();
   return '<table class="drops"><thead><tr><th>Monster</th><th class="num">Level</th><th class="num">Rate</th><th>Maps</th></tr></thead><tbody>'+
     rows.filter(([mid,rate,kind])=>{const k=MOBS[mid][0]+'|'+MOBS[mid][1]+'|'+rate+'|'+kind+'|'+JSON.stringify(MOBS[mid][3]);return seen.has(k)?false:seen.add(k)}).map(([mid,rate,kind])=>{const m=MOBS[mid];
-      const maps=m[3].length?m[3].map(([map,n])=>esc(map)+' (x'+n+')').join(", "):"No normal spawn";
+      const maps=m[3].length?m[3].map(([map,n])=>'<button class="map" data-warp="'+esc(map)+'" title="Copy @warp '+esc(map)+'">'+esc(map)+' (x'+n+')</button>').join(""):"No normal spawn";
       return '<tr><td>'+esc(m[0])+(kind?'<span class="tag">MVP reward</span>':m[2]?'<span class="tag">MVP</span>':'')+'</td><td class="num">'+m[1]+'</td><td class="num">'+pct(rate)+'</td><td class="maps">'+maps+'</td></tr>'}).join("")+
     '</tbody></table>';
 }
@@ -167,6 +172,8 @@ async function copy(text){
 $("rows").addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.drop){const id=+b.dataset.drop;open.has(id)?open.delete(id):open.add(id);draw()}
+  if(b.dataset.warp){const map=b.dataset.warp,old=b.textContent,ok=await copy("@warp "+map);b.textContent=ok?"Copied @warp "+map:"Copy failed";b.classList.add("done");
+    setTimeout(()=>{b.textContent=old;b.classList.remove("done")},1200)}
   if(b.dataset.copy){const ok=await copy("@alootid +"+b.dataset.copy);b.textContent=ok?"Copied":"Copy failed";b.classList.add("done");
     setTimeout(()=>{b.textContent="@alootid";b.classList.remove("done")},1200)}
 });

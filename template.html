@@ -10,68 +10,87 @@
 <style>
 :root{
   --bg:#eef2f8; --panel:#ffffff; --bar:#3d5f94; --bar-text:#ffffff;
-  --text:#1c2433; --muted:#5b6679; --line:#d6deea; --row:#f6f8fc;
-  --zeny:#8a6300; --focus:#2f6fd6;
+  --text:#1c2433; --muted:#5b6679; --line:#d6deea; --row:#f6f8fc; --detail:#e8eef8;
+  --zeny:#8a6300; --focus:#2f6fd6; --mvp:#b3261e;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#141a24; --panel:#1c2432; --bar:#2c4670; --bar-text:#eef3fb;
-    --text:#e4e9f2; --muted:#9aa6ba; --line:#2e3a4e; --row:#212b3b;
-    --zeny:#e0b64a; --focus:#7aa7ff;
+    --text:#e4e9f2; --muted:#9aa6ba; --line:#2e3a4e; --row:#212b3b; --detail:#172030;
+    --zeny:#e0b64a; --focus:#7aa7ff; --mvp:#ff8a80;
   }
 }
 :root[data-theme="dark"]{
   --bg:#141a24; --panel:#1c2432; --bar:#2c4670; --bar-text:#eef3fb;
-  --text:#e4e9f2; --muted:#9aa6ba; --line:#2e3a4e; --row:#212b3b;
-  --zeny:#e0b64a; --focus:#7aa7ff;
+  --text:#e4e9f2; --muted:#9aa6ba; --line:#2e3a4e; --row:#212b3b; --detail:#172030;
+  --zeny:#e0b64a; --focus:#7aa7ff; --mvp:#ff8a80;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);
   font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45}
-.wrap{max-width:960px;margin:0 auto;padding:20px 14px 40px}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 14px 40px}
 .win{background:var(--panel);border:1px solid var(--line);border-radius:6px}
 .top{position:sticky;top:20px;box-shadow:0 -21px 0 1px var(--bg);z-index:2;background:var(--panel);border-radius:6px 6px 0 0;border-bottom:1px solid var(--line)}
-.pager{border-radius:0 0 6px 6px}
 .title{border-radius:6px 6px 0 0;background:var(--bar);color:var(--bar-text);padding:10px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
 .title h1{margin:0;font-size:18px}
 .title span{font-size:13px;opacity:.85}
-.controls{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.controls{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;padding:14px 16px 8px}
 label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
 input,select,button{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:7px 9px}
-input:focus,select:focus,button:focus-visible,th button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-.info{padding:8px 16px;font-size:13px;color:var(--muted)}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.info{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:4px 16px 10px;font-size:13px;color:var(--muted)}
+.switch{flex-direction:row;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:14px}
+.switch input{appearance:none;width:34px;height:20px;padding:0;border-radius:10px;position:relative;cursor:pointer;background:var(--line);border:none}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--panel);transition:left .15s}
+.switch input:checked{background:var(--focus)}
+.switch input:checked::after{left:17px}
 .tablebox{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 th{text-align:left;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);padding:0}
 th button{all:unset;cursor:pointer;display:block;width:100%;padding:8px 12px;box-sizing:border-box}
+th button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
 th.num button,td.num{text-align:right}
+th.act{padding:8px 12px}
 td{padding:7px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
 td.name{white-space:normal}
 td.name a{color:inherit;text-decoration:none}
 td.name a:hover{text-decoration:underline;color:var(--focus)}
 td.name a:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-tbody tr:nth-child(even){background:var(--row)}
+tr.alt{background:var(--row)}
 td.sell{color:var(--zeny);font-weight:700}
+td.act{text-align:right}
+.pill{font-size:12px;padding:3px 8px;border-radius:12px;cursor:pointer;background:transparent;margin-left:4px}
+.pill:hover{border-color:var(--focus);color:var(--focus)}
+.pill[aria-expanded="true"]{background:var(--focus);border-color:var(--focus);color:var(--panel)}
+.pill.done{border-color:var(--zeny);color:var(--zeny)}
+tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
+.drops{width:100%;font-size:14px}
+.drops th{padding:4px 8px;border-bottom:1px solid var(--line)}
+.drops th.num{text-align:right}
+.drops td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.drops td.maps{white-space:normal;color:var(--muted)}
+.tag{font-size:11px;font-weight:700;color:var(--mvp);border:1px solid var(--mvp);border-radius:3px;padding:0 4px;margin-left:6px}
 .empty{padding:28px 16px;text-align:center;color:var(--muted)}
-.pager{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;gap:10px}
+.pager{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;gap:10px;border-radius:0 0 6px 6px}
 .pager button{cursor:pointer}
 .pager button:disabled{opacity:.4;cursor:default}
 .note{font-size:12px;color:var(--muted);margin-top:12px;padding:0 4px}
 .note a{color:var(--focus)}
 @media (max-width:640px){.controls{grid-template-columns:1fr 1fr}.controls label:first-child{grid-column:1/-1}}
+@media (prefers-reduced-motion:reduce){.switch input::after{transition:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="win">
     <div class="top">
-    <div class="title"><h1>Item lookup</h1><span>rAthena renewal data, built __DATE__</span></div>
-    <div class="controls">
-      <label>Name or ID<input id="q" type="search" placeholder="e.g. potion, 501" autocomplete="off"></label>
-      <label>Type<select id="type"></select></label>
-      <label>Sell price at least<input id="min" type="number" min="0" step="1000" placeholder="0"></label>
-    </div>
-    <div class="info" id="info"></div>
+      <div class="title"><h1>Item lookup</h1><span>rAthena renewal data, built __DATE__</span></div>
+      <div class="controls">
+        <label>Name or ID<input id="q" type="search" placeholder="e.g. potion, 501" autocomplete="off"></label>
+        <label>Type<select id="type"></select></label>
+        <label>Sell price at least<input id="min" type="number" min="0" step="1000" placeholder="0"></label>
+      </div>
+      <div class="info"><span id="info"></span><label class="switch"><input id="dropOnly" type="checkbox">Dropped by monster</label></div>
     </div>
     <div class="tablebox">
       <table>
@@ -81,11 +100,12 @@ td.sell{color:var(--zeny);font-weight:700}
           <th><button data-k="2">Type</button></th>
           <th class="num"><button data-k="3">Weight</button></th>
           <th class="num"><button data-k="4">Sell price</button></th>
+          <th class="act"><span hidden>Actions</span></th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
-    <div class="empty" id="empty" hidden>No items match. Try a shorter name or set Type to All.</div>
+    <div class="empty" id="empty" hidden>No items match. Try a shorter name, set Type to All, or turn off "Dropped by monster".</div>
     <div class="pager">
       <button id="prev">Previous</button><span id="page"></span><button id="next">Next</button>
     </div>
@@ -93,36 +113,66 @@ td.sell{color:var(--zeny);font-weight:700}
   <p class="note">Created for fun by Alviss 2026. Visit <a href="https://rockragnarok.com/" target="_blank" rel="noopener" data-goatcounter-click="rockmmo-link">RockMMO</a>.</p>
 </div>
 <script>
-const ITEMS=__DATA__;
+const DB=__DATA__;
+const ITEMS=DB.items, DROPS=DB.drops, MOBS=DB.mobs;
 const TYPE_NAMES={Healing:"Healing",Usable:"Usable",DelayConsume:"Delayed use",Etc:"Etc",Armor:"Armor",Weapon:"Weapon",Card:"Card",PetEgg:"Pet egg",PetArmor:"Pet armor",Ammo:"Ammo",ShadowGear:"Shadow gear",Cash:"Cash shop"};
 const PER=100;
 const $=id=>document.getElementById(id);
-const q=$("q"),typeSel=$("type"),minIn=$("min");
+const q=$("q"),typeSel=$("type"),minIn=$("min"),dropOnly=$("dropOnly");
 let sortKey=0,sortDir=1,page=0,list=[];
+const open=new Set();
 const counts={};ITEMS.forEach(r=>counts[r[2]]=(counts[r[2]]||0)+1);
 typeSel.innerHTML='<option value="">All ('+ITEMS.length.toLocaleString()+')</option>'+
   Object.keys(counts).sort((a,b)=>(TYPE_NAMES[a]||a).localeCompare(TYPE_NAMES[b]||b))
   .map(t=>'<option value="'+t+'">'+(TYPE_NAMES[t]||t)+' ('+counts[t].toLocaleString()+')</option>').join("");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pct=r=>{const p=r/100;return (p>=1?p.toFixed(2).replace(/\.?0+$/,""):p.toFixed(2))+"%"};
 function run(){
-  const s=q.value.trim().toLowerCase(),t=typeSel.value,m=parseInt(minIn.value,10)||0;
+  const s=q.value.trim().toLowerCase(),t=typeSel.value,m=parseInt(minIn.value,10)||0,d=dropOnly.checked;
   const isId=/^\d+$/.test(s);
-  list=ITEMS.filter(r=>(!t||r[2]===t)&&r[4]>=m&&(!s||(isId?String(r[0]).startsWith(s):r[1].toLowerCase().includes(s))));
+  list=ITEMS.filter(r=>(!t||r[2]===t)&&r[4]>=m&&(!d||DROPS[r[0]])&&(!s||(isId?String(r[0]).startsWith(s):r[1].toLowerCase().includes(s))));
   list.sort((a,b)=>{const x=a[sortKey],y=b[sortKey];return (typeof x==="string"?x.localeCompare(y):x-y)*sortDir||a[0]-b[0]});
   page=0;draw();
+}
+function dropTable(id){
+  const rows=(DROPS[id]||[]).slice().sort((a,b)=>(MOBS[b[0]][3].length>0)-(MOBS[a[0]][3].length>0)||b[1]-a[1]);
+  const seen=new Set();
+  return '<table class="drops"><thead><tr><th>Monster</th><th class="num">Level</th><th class="num">Rate</th><th>Maps</th></tr></thead><tbody>'+
+    rows.filter(([mid,rate,kind])=>{const k=MOBS[mid][0]+'|'+MOBS[mid][1]+'|'+rate+'|'+kind+'|'+JSON.stringify(MOBS[mid][3]);return seen.has(k)?false:seen.add(k)}).map(([mid,rate,kind])=>{const m=MOBS[mid];
+      const maps=m[3].length?m[3].map(([map,n])=>esc(map)+' (x'+n+')').join(", "):"No normal spawn";
+      return '<tr><td>'+esc(m[0])+(kind?'<span class="tag">MVP reward</span>':m[2]?'<span class="tag">MVP</span>':'')+'</td><td class="num">'+m[1]+'</td><td class="num">'+pct(rate)+'</td><td class="maps">'+maps+'</td></tr>'}).join("")+
+    '</tbody></table>';
 }
 function draw(){
   const pages=Math.max(1,Math.ceil(list.length/PER));
   const slice=list.slice(page*PER,page*PER+PER);
-  $("rows").innerHTML=slice.map(r=>'<tr><td class="num">'+r[0]+'</td><td class="name"><a href="https://www.divine-pride.net/database/item/'+r[0]+'" target="_blank" rel="noopener">'+esc(r[1])+'</a></td><td>'+(TYPE_NAMES[r[2]]||r[2])+'</td><td class="num">'+(r[3]/10).toLocaleString()+'</td><td class="num sell">'+r[4].toLocaleString()+' z</td></tr>').join("");
+  $("rows").innerHTML=slice.map((r,i)=>{
+    const has=!!DROPS[r[0]],isOpen=has&&open.has(r[0]);
+    return '<tr class="'+(i%2?'alt':'')+'"><td class="num">'+r[0]+'</td><td class="name"><a href="https://www.divine-pride.net/database/item/'+r[0]+'" target="_blank" rel="noopener">'+esc(r[1])+'</a></td><td>'+(TYPE_NAMES[r[2]]||r[2])+'</td><td class="num">'+(r[3]/10).toLocaleString()+'</td><td class="num sell">'+r[4].toLocaleString()+' z</td><td class="act">'+
+      (has?'<button class="pill" data-drop="'+r[0]+'" aria-expanded="'+isOpen+'">Drop from</button>':'')+
+      '<button class="pill" data-copy="'+r[0]+'" title="Copy @alootid +'+r[0]+'">@alootid</button></td></tr>'+
+      (isOpen?'<tr class="detail"><td colspan="6">'+dropTable(r[0])+'</td></tr>':'');
+  }).join("");
   $("empty").hidden=list.length>0;
   $("info").textContent=list.length.toLocaleString()+" items found";
   $("page").textContent="Page "+(page+1)+" of "+pages;
   $("prev").disabled=page===0;$("next").disabled=page>=pages-1;
   document.querySelectorAll("th button").forEach(b=>{const k=+b.dataset.k;b.textContent=b.textContent.replace(/ [▲▼]$/,"")+(k===sortKey?(sortDir>0?" ▲":" ▼"):"")});
 }
+async function copy(text){
+  try{await navigator.clipboard.writeText(text);return true}catch(e){
+    const t=document.createElement("textarea");t.value=text;document.body.appendChild(t);t.select();
+    let ok=false;try{ok=document.execCommand("copy")}catch(e2){}t.remove();return ok}
+}
+$("rows").addEventListener("click",async e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.drop){const id=+b.dataset.drop;open.has(id)?open.delete(id):open.add(id);draw()}
+  if(b.dataset.copy){const ok=await copy("@alootid +"+b.dataset.copy);b.textContent=ok?"Copied":"Copy failed";b.classList.add("done");
+    setTimeout(()=>{b.textContent="@alootid";b.classList.remove("done")},1200)}
+});
 let timer;q.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(run,150)});
-typeSel.addEventListener("change",run);minIn.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(run,200)});
+typeSel.addEventListener("change",run);dropOnly.addEventListener("change",run);
+minIn.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(run,200)});
 document.querySelectorAll("th button").forEach(b=>b.addEventListener("click",()=>{const k=+b.dataset.k;if(k===sortKey)sortDir=-sortDir;else{sortKey=k;sortDir=(k===4||k===3)?-1:1}run()}));
 $("prev").onclick=()=>{page--;draw();window.scrollTo(0,0)};
 $("next").onclick=()=>{page++;draw();window.scrollTo(0,0)};

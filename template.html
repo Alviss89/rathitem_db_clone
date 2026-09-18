@@ -30,7 +30,7 @@ body{margin:0;background:var(--bg);color:var(--text);
   font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45}
 .wrap{max-width:960px;margin:0 auto;padding:20px 14px 40px}
 .win{background:var(--panel);border:1px solid var(--line);border-radius:6px}
-.top{position:sticky;top:0;z-index:2;background:var(--panel);border-radius:6px 6px 0 0;border-bottom:1px solid var(--line)}
+.top{position:sticky;top:20px;box-shadow:0 -21px 0 1px var(--bg);z-index:2;background:var(--panel);border-radius:6px 6px 0 0;border-bottom:1px solid var(--line)}
 .pager{border-radius:0 0 6px 6px}
 .title{border-radius:6px 6px 0 0;background:var(--bar);color:var(--bar-text);padding:10px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
 .title h1{margin:0;font-size:18px}
@@ -57,6 +57,7 @@ td.sell{color:var(--zeny);font-weight:700}
 .pager button{cursor:pointer}
 .pager button:disabled{opacity:.4;cursor:default}
 .note{font-size:12px;color:var(--muted);margin-top:12px;padding:0 4px}
+.note a{color:var(--focus)}
 @media (max-width:640px){.controls{grid-template-columns:1fr 1fr}.controls label:first-child{grid-column:1/-1}}
 </style>
 </head>
@@ -89,7 +90,7 @@ td.sell{color:var(--zeny);font-weight:700}
       <button id="prev">Previous</button><span id="page"></span><button id="next">Next</button>
     </div>
   </div>
-  <p class="note">Created for fun by Alviss 2026. Visit <a href="https://rockragnarok.com/" target="_blank" rel="noopener">RockMMO</a>.</p>
+  <p class="note">Created for fun by Alviss 2026. Visit <a href="https://rockragnarok.com/" target="_blank" rel="noopener" data-goatcounter-click="rockmmo-link">RockMMO</a>.</p>
 </div>
 <script>
 const ITEMS=__DATA__;
@@ -127,5 +128,6 @@ $("prev").onclick=()=>{page--;draw();window.scrollTo(0,0)};
 $("next").onclick=()=>{page++;draw();window.scrollTo(0,0)};
 run();
 </script>
+<script data-goatcounter="https://alviss89.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

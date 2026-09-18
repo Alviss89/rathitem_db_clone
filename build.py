@@ -1,27 +1,65 @@
-# Downloads rAthena renewal item files and builds site/index.html
-import json, os, urllib.request, datetime, yaml
+# Downloads rAthena renewal data and builds site/index.html
+import json, os, re, subprocess, tempfile, datetime, yaml
 
-BASE = "https://raw.githubusercontent.com/rathena/rathena/master/db/re/item_db_{}.yml"
-FIX = {"shadowgear": "ShadowGear", "petegg": "PetEgg", "petarmor": "PetArmor", "delayconsume": "DelayConsume"}
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+FIX = {"shadowgear": "ShadowGear", "petegg": "PetEgg", "petarmor": "PetArmor", "delayconsume": "DelayConsume"}
 
-rows = []
+src = tempfile.mkdtemp()
+git = lambda *a: subprocess.run(["git", *a], cwd=src, check=True, capture_output=True)
+git("clone", "--depth", "1", "--filter=blob:none", "--sparse", "https://github.com/rathena/rathena.git", ".")
+git("sparse-checkout", "set", "--no-cone", "/db/re/item_db_*.yml", "/db/re/mob_db.yml", "/npc/re/mobs/", "/npc/re/scripts_monsters.conf")
+load = lambda p: yaml.load(open(os.path.join(src, p), encoding="utf-8"), Loader=Loader).get("Body") or []
+
+# Items: [id, name, type, weight, sell]
+items, aegis_to_item = [], {}
 for part in ("equip", "etc", "usable"):
-    with urllib.request.urlopen(BASE.format(part)) as r:
-        data = yaml.load(r.read().decode("utf-8"), Loader=Loader)
-    for it in data.get("Body") or []:
+    for it in load(f"db/re/item_db_{part}.yml"):
         buy, sell = it.get("Buy"), it.get("Sell")
         if sell is None:
             sell = buy // 2 if buy is not None else 0  # rAthena rule: no Sell = half of Buy
         t = it.get("Type", "Etc")
-        rows.append([it["Id"], it.get("Name", ""), FIX.get(t.lower(), t), it.get("Weight", 0), sell])
+        items.append([it["Id"], it.get("Name", ""), FIX.get(t.lower(), t), it.get("Weight", 0), sell])
+        aegis_to_item[it["AegisName"].lower()] = it["Id"]
+assert len(items) > 10000, f"only {len(items)} items, download probably broke"
+items.sort(key=lambda r: r[0])
 
-assert len(rows) > 10000, f"only {len(rows)} items, download probably broke"
-rows.sort(key=lambda r: r[0])
+# Monsters: {id: [name, level, isMvp, [[map, count], ...]]}
+mobs, aegis_to_mob, drops = {}, {}, {}
+for m in load("db/re/mob_db.yml"):
+    mobs[m["Id"]] = [m.get("Name", m["AegisName"]), m.get("Level", 1), 1 if m.get("MvpExp") or (m.get("Modes") or {}).get("Mvp") else 0, {}]
+    aegis_to_mob[m["AegisName"].lower()] = m["Id"]
+    for kind, key in ((0, "Drops"), (1, "MvpDrops")):
+        for d in m.get(key) or []:
+            iid = aegis_to_item.get(str(d["Item"]).lower())
+            if iid:
+                drops.setdefault(iid, []).append([m["Id"], d["Rate"], kind])  # kind 1 = MVP reward
 
+# Spawns: only files turned on in scripts_monsters.conf
+conf = open(os.path.join(src, "npc/re/scripts_monsters.conf"), encoding="utf-8").read()
+for path in re.findall(r"^\s*npc:\s*(\S+)", conf, re.M):
+    f = os.path.join(src, path)
+    if not os.path.exists(f):
+        continue
+    for line in open(f, encoding="utf-8", errors="replace"):
+        if line.lstrip().startswith("//"):
+            continue
+        cols = line.rstrip("\n").split("\t")
+        if len(cols) < 4 or cols[1] not in ("monster", "boss_monster"):
+            continue
+        key, amount = (cols[3].split(",") + ["1"])[:2]
+        mid = int(key) if key.strip().isdigit() else aegis_to_mob.get(key.strip().lower())
+        if mid in mobs:
+            spawn = mobs[mid][3]
+            m = cols[0].split(",")[0]
+            spawn[m] = spawn.get(m, 0) + (int(amount) if amount.strip().isdigit() else 1)
+
+used = {d[0] for lst in drops.values() for d in lst}
+mob_out = {i: [v[0], v[1], v[2], sorted(v[3].items(), key=lambda x: -x[1])] for i, v in mobs.items() if i in used}
+
+data = json.dumps({"items": items, "drops": drops, "mobs": mob_out}, separators=(",", ":"), ensure_ascii=False)
 page = open("template.html", encoding="utf-8").read()
-page = page.replace("__DATA__", json.dumps(rows, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/"))
+page = page.replace("__DATA__", data.replace("</", "<\\/"))
 page = page.replace("__DATE__", datetime.date.today().strftime("%d %b %Y"))
 os.makedirs("site", exist_ok=True)
 open("site/index.html", "w", encoding="utf-8").write(page)
-print(f"built site/index.html with {len(rows)} items")
+print(f"built site/index.html: {len(items)} items, {len(drops)} dropped items, {len(mob_out)} monsters, {len(page)//1024} KB")

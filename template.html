@@ -26,9 +26,10 @@
   --zeny:#e0b64a; --focus:#7aa7ff; --mvp:#ff8a80;
 }
 *{box-sizing:border-box}
+html{scrollbar-gutter:stable;overflow-y:scroll}
 body{margin:0;background:var(--bg);color:var(--text);
   font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45}
-.wrap{max-width:1040px;margin:0 auto;padding:20px 14px 40px}
+.wrap{max-width:1120px;margin:0 auto;padding:20px 14px 40px}
 .win{background:var(--panel);border:1px solid var(--line);border-radius:6px}
 .top{position:sticky;top:20px;box-shadow:0 -21px 0 1px var(--bg);z-index:2;background:var(--panel);border-radius:6px 6px 0 0;border-bottom:1px solid var(--line)}
 .title{border-radius:6px 6px 0 0;background:var(--bar);color:var(--bar-text);padding:10px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
@@ -46,6 +47,9 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--focus);out
 .switch input:checked::after{left:17px}
 .tablebox{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.main{table-layout:fixed;min-width:860px}
+.main .c-id{width:84px}.main .c-type{width:130px}.main .c-w{width:90px}.main .c-sell{width:130px}.main .c-act{width:200px}
+.main td{overflow:hidden;text-overflow:ellipsis}
 th{text-align:left;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);padding:0}
 th button{all:unset;cursor:pointer;display:block;width:100%;padding:8px 12px;box-sizing:border-box}
 th button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
@@ -76,6 +80,7 @@ tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
 .drops td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 .drops td.maps{white-space:normal;color:var(--muted)}
 .map{font-size:13px;color:var(--muted);background:transparent;border:1px solid transparent;border-radius:4px;padding:1px 6px;margin:0 4px 2px 0;cursor:pointer}
+.nospawn{padding-left:7px}
 .map:hover{color:var(--focus);border-color:var(--line)}
 .map.done{color:var(--zeny);border-color:var(--zeny)}
 .tag{font-size:11px;font-weight:700;color:var(--mvp);border:1px solid var(--mvp);border-radius:3px;padding:0 4px;margin-left:6px}
@@ -103,7 +108,8 @@ tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
       <div class="info"><span id="info"></span><label class="switch"><input id="dropOnly" type="checkbox">Dropped by monster</label></div>
     </div>
     <div class="tablebox">
-      <table>
+      <table class="main">
+        <colgroup><col class="c-id"><col><col class="c-type"><col class="c-w"><col class="c-sell"><col class="c-act"></colgroup>
         <thead><tr>
           <th class="num"><button data-k="0">ID</button></th>
           <th><button data-k="1">Name</button></th>
@@ -152,7 +158,7 @@ function dropTable(id){
   const seen=new Set();
   return '<table class="drops"><colgroup><col class="c-id"><col class="c-mob"><col class="c-lv"><col class="c-rate"><col></colgroup><thead><tr><th class="num">ID</th><th>Monster</th><th class="num">Level</th><th class="num">Rate</th><th>Maps</th></tr></thead><tbody>'+
     rows.filter(([mid,rate,kind])=>{const k=MOBS[mid][0]+'|'+MOBS[mid][1]+'|'+rate+'|'+kind+'|'+JSON.stringify(MOBS[mid][3]);return seen.has(k)?false:seen.add(k)}).map(([mid,rate,kind])=>{const m=MOBS[mid];
-      const maps=m[3].length?m[3].map(([map,n])=>'<button class="map" data-warp="'+esc(map)+'" title="Copy @warp '+esc(map)+'">'+esc(map)+' (x'+n+')</button>').join(""):"No normal spawn";
+      const maps=m[3].length?m[3].map(([map,n])=>'<button class="map" data-warp="'+esc(map)+'" title="Copy @warp '+esc(map)+'">'+esc(map)+' (x'+n+')</button>').join(""):'<span class="nospawn">No normal spawn</span>';
       return '<tr><td class="num mid"><button class="map" data-mi="'+mid+'" title="Copy @mi '+mid+'">'+mid+'</button></td><td class="mob"><a href="https://www.divine-pride.net/database/monster/'+mid+'" target="_blank" rel="noopener">'+esc(m[0])+'</a>'+(kind?'<span class="tag">MVP reward</span>':m[2]?'<span class="tag">MVP</span>':'')+'</td><td class="num">'+m[1]+'</td><td class="num">'+pct(rate)+'</td><td class="maps">'+maps+'</td></tr>'}).join("")+
     '</tbody></table>';
 }

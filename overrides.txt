@@ -1,0 +1,3 @@
+# Custom monster names and pictures, one per line:
+# monster ID | name (leave empty to keep) | picture (file in the repo, like img/1234.png, or a full https:// address; leave empty to keep)
+22495 | Gluttus | img/22495.png

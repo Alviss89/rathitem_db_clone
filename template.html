@@ -56,6 +56,19 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--focus);out
 .info{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:4px 16px 10px;font-size:13px;color:var(--muted)}
 .switches{display:flex;gap:18px;flex-wrap:wrap}
 .mctl{grid-template-columns:1fr 1fr;align-items:end}
+.ictl{grid-template-columns:2fr 1fr}
+.field{position:relative;display:block}
+.field input{width:100%;padding-right:32px}
+.clr{all:unset;position:absolute;right:6px;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px;font-size:18px;color:var(--muted);cursor:pointer;visibility:hidden}
+.field.has .clr{visibility:visible}
+.clr:hover{color:var(--text);background:var(--chip)}
+.clr:focus-visible{outline:2px solid var(--focus)}
+input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.reset{font-size:13px;padding:3px 12px;border-radius:12px;cursor:pointer;background:transparent}
+.reset:hover{border-color:var(--focus);color:var(--focus)}
+.info .switches{align-items:center}
 .mctl .switches{justify-content:flex-end;padding-bottom:8px}
 .switch{flex-direction:row;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:14px}
 .switch input{appearance:none;width:34px;height:20px;padding:0;border-radius:10px;position:relative;cursor:pointer;background:var(--line);border:none;flex:none}
@@ -70,6 +83,8 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--focus);out
 .chip:hover{border-color:var(--focus)}
 .chip[aria-pressed="true"]{background:var(--focus);border-color:var(--focus);color:var(--panel)}
 .tablebox{overflow-x:auto}
+@media (min-width:900px){.tablebox{overflow:visible}
+  .main>thead th{position:sticky;top:var(--stick,0px);z-index:1;background:var(--panel);box-shadow:inset 0 -1px 0 var(--line)}}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 table.main{table-layout:fixed;min-width:860px}
 .main .c-id{width:84px}.main .c-type{width:130px}.main .c-w{width:90px}.main .c-sell{width:130px}.main .c-act{width:200px}
@@ -137,16 +152,18 @@ tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
         <button class="tab" role="tab" id="tab-mob" aria-controls="view-mob" data-tab="mob">Monster DB</button>
       </div>
       <div id="ctl-item">
-        <div class="controls">
-          <label>Name or ID<input id="iq" type="search" placeholder="e.g. potion, 501" autocomplete="off"></label>
-          <label>Type<select id="itype"></select></label>
-          <label>Sell price at least<input id="imin" type="number" min="0" step="1000" placeholder="0"></label>
+        <div class="controls ictl">
+          <label>Name or ID<span class="field"><input id="iq" type="search" placeholder="e.g. potion, 501" autocomplete="off"><button type="button" class="clr" data-clear="iq" aria-label="Clear name or ID">&times;</button></span></label>
+          <label>Sell price at least<span class="field"><input id="imin" type="number" min="0" step="1000" placeholder="0"><button type="button" class="clr" data-clear="imin" aria-label="Clear sell price">&times;</button></span></label>
         </div>
-        <div class="info"><span id="iinfo"></span><label class="switch"><input id="idrop" type="checkbox">Dropped by monster</label></div>
+        <div class="chiprows">
+          <div class="chiprow"><span class="lbl">Type</span><span id="c-type" class="chiprow"></span></div>
+        </div>
+        <div class="info"><span id="iinfo"></span><span class="switches"><label class="switch"><input id="idrop" type="checkbox">Dropped by monster</label><button type="button" class="reset" id="ireset">Reset filters</button></span></div>
       </div>
       <div id="ctl-mob" hidden>
         <div class="controls mctl">
-          <label>Name or ID<input id="mq" type="search" placeholder="e.g. poring, 1002" autocomplete="off"></label>
+          <label>Name or ID<span class="field"><input id="mq" type="search" placeholder="e.g. poring, 1002" autocomplete="off"><button type="button" class="clr" data-clear="mq" aria-label="Clear name or ID">&times;</button></span></label>
           <div class="switches"><label class="switch"><input id="mboss" type="checkbox">Boss only</label><label class="switch"><input id="mspawn" type="checkbox">Normally spawned only</label></div>
         </div>
         <div class="chiprows">
@@ -154,7 +171,7 @@ tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
           <div class="chiprow"><span class="lbl">Element</span><span id="c-elem" class="chiprow"></span></div>
           <div class="chiprow"><span class="lbl">Race</span><span id="c-race" class="chiprow"></span></div>
         </div>
-        <div class="info"><span id="minfo"></span></div>
+        <div class="info"><span id="minfo"></span><button type="button" class="reset" id="mreset">Reset filters</button></div>
       </div>
     </div>
 
@@ -173,7 +190,7 @@ tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
           <tbody id="irows"></tbody>
         </table>
       </div>
-      <div class="empty" id="iempty" hidden>No items match. Try a shorter name, set Type to All, or turn off "Dropped by monster".</div>
+      <div class="empty" id="iempty" hidden>No items match. Try a shorter name or reset the filters.</div>
       <div class="pager"><button id="iprev">Previous</button><span id="ipage"></span><button id="inext">Next</button></div>
     </div>
 
@@ -230,16 +247,17 @@ function sortMarks(view,key,dir){view.querySelectorAll("th button").forEach(b=>{
 
 /* ---------- Item DB ---------- */
 const I={sortKey:0,sortDir:1,page:0,list:[],open:null};
+I.f={type:new Set()};
 (function(){
-  const counts={};ITEMS.forEach(r=>counts[r[2]]=(counts[r[2]]||0)+1);
-  $("itype").innerHTML='<option value="">All ('+ITEMS.length.toLocaleString()+')</option>'+
-    Object.keys(counts).sort((a,b)=>(TYPE_NAMES[a]||a).localeCompare(TYPE_NAMES[b]||b))
-    .map(t=>'<option value="'+t+'">'+(TYPE_NAMES[t]||t)+' ('+counts[t].toLocaleString()+')</option>').join("");
+  const have=new Set(ITEMS.map(r=>r[2]));
+  const order=["Weapon","Armor","ShadowGear","Card","Ammo","Healing","Usable","DelayConsume","Etc","PetEgg","PetArmor","Cash"];
+  const list=[...order.filter(t=>have.has(t)),...[...have].filter(t=>!order.includes(t))];
+  $("c-type").innerHTML=list.map(t=>'<button class="chip" data-scope="i" data-f="type" data-v="'+t+'" aria-pressed="false">'+(TYPE_NAMES[t]||t)+'</button>').join("");
 })();
 function iRun(){
-  const s=$("iq").value.trim().toLowerCase(),t=$("itype").value,m=parseInt($("imin").value,10)||0,d=$("idrop").checked;
+  const s=$("iq").value.trim().toLowerCase(),ts=I.f.type,m=parseInt($("imin").value,10)||0,d=$("idrop").checked;
   const isId=/^\d+$/.test(s);
-  I.list=ITEMS.filter(r=>(!t||r[2]===t)&&r[4]>=m&&(!d||DROPS[r[0]])&&(!s||(isId?String(r[0]).startsWith(s):r[1].toLowerCase().includes(s))));
+  I.list=ITEMS.filter(r=>(!ts.size||ts.has(r[2]))&&r[4]>=m&&(!d||DROPS[r[0]])&&(!s||(isId?String(r[0]).startsWith(s):r[1].toLowerCase().includes(s))));
   I.list.sort((a,b)=>{const x=a[I.sortKey],y=b[I.sortKey];return (typeof x==="string"?x.localeCompare(y):x-y)*I.sortDir||a[0]-b[0]});
   I.page=0;iDraw();
 }
@@ -270,7 +288,7 @@ function iDraw(){
 const MLIST=Object.keys(MOBS).map(Number);
 const M={sortKey:"id",sortDir:1,page:0,list:[],open:null,f:{size:new Set(),elvl:new Set(),elem:new Set(),race:new Set()}};
 function chips(box,key,pairs){
-  $(box).innerHTML=pairs.map(([v,t])=>'<button class="chip" data-f="'+key+'" data-v="'+v+'" aria-pressed="false">'+t+'</button>').join("");
+  $(box).innerHTML=pairs.map(([v,t])=>'<button class="chip" data-scope="m" data-f="'+key+'" data-v="'+v+'" aria-pressed="false">'+t+'</button>').join("");
 }
 chips("c-size","size",SIZES.map(s=>[s,s]));
 chips("c-elvl","elvl",[1,2,3,4].map(n=>[n,n]));
@@ -298,7 +316,7 @@ function mDetail(id){
   const img='<img referrerpolicy="no-referrer" alt="'+esc(m[0])+'" src="'+esc((DB.img||{})[id]||"https://static.divine-pride.net/images/mobs/png/"+id+".png")+'" data-sprite="1">';
   return '<div class="mdetail"><div class="sprite">'+img+'</div><div>'+
     '<div class="stats"><div class="stat"><b>Race</b>'+lbl(m[6])+'</div><div class="stat"><b>Element</b>'+lbl(m[7])+' '+m[8]+'</div><div class="stat"><b>Size</b>'+m[5]+'</div><div class="stat"><b>HP</b>'+m[4].toLocaleString()+'</div></div>'+
-    (m[2]?'<div class="subhead">MVP rewards <span>(go straight to the MVP killer\'s inventory)</span></div>'+itemRows(m[12]):'')+
+    (m[2]?'<div class="subhead">MVP rewards</div>'+itemRows(m[12]):'')+
     '<div class="subhead">Drops</div>'+itemRows(m[11])+
     '</div></div>';
 }
@@ -339,7 +357,8 @@ document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>show
 /* ---------- Scroll an opened row to just under the frozen header ---------- */
 function scrollToRow(sel){
   const row=document.querySelector(sel);if(!row)return;
-  const headerBottom=document.querySelector(".top").getBoundingClientRect().bottom;
+  const th=row.closest("table").querySelector("thead");
+  const headerBottom=document.querySelector(".top").getBoundingClientRect().bottom+(getComputedStyle(th.querySelector("th")).position==="sticky"?th.offsetHeight:0);
   const smooth=!matchMedia("(prefers-reduced-motion: reduce)").matches;
   window.scrollTo({top:window.scrollY+row.getBoundingClientRect().top-headerBottom,behavior:smooth?"smooth":"auto"});
 }
@@ -359,12 +378,28 @@ document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.idrop){const id=+b.dataset.idrop;I.open=I.open===id?null:id;iDraw();if(I.open)scrollToRow('[data-irow="'+id+'"]');return}
   if(b.dataset.mdet){const id=+b.dataset.mdet;M.open=M.open===id?null:id;mDraw();if(M.open)scrollToRow('[data-mrow="'+id+'"]');return}
-  if(b.dataset.f){const set=M.f[b.dataset.f],v=b.dataset.v,on=!set.has(v);on?set.add(v):set.delete(v);b.setAttribute("aria-pressed",on);mRun();return}
+  if(b.dataset.f){const S=b.dataset.scope==="i"?I:M,set=S.f[b.dataset.f],v=b.dataset.v,on=!set.has(v);on?set.add(v):set.delete(v);b.setAttribute("aria-pressed",on);S===I?iRun():mRun();return}
+  if(b.dataset.clear){const inp=$(b.dataset.clear);inp.value="";syncClear(inp);inp.id[0]==="i"?iRun():mRun();inp.focus();return}
+  if(b.id==="ireset"||b.id==="mreset"){resetFilters(b.id[0]);return}
   const text=b.dataset.mi?"@mi "+b.dataset.mi:b.dataset.warp?"@warp "+b.dataset.warp:b.dataset.copy?"@alootid +"+b.dataset.copy:null;
   if(text){const ok=await copy(text);flash(b,ok?"Copied: "+text:"Copy failed")}
 });
 $("iq").addEventListener("input",debounce(iRun,150));$("imin").addEventListener("input",debounce(iRun,200));
-$("itype").addEventListener("change",iRun);$("idrop").addEventListener("change",iRun);
+$("idrop").addEventListener("change",iRun);
+function syncClear(inp){inp.parentNode.classList.toggle("has",inp.value!=="")}
+["iq","imin","mq"].forEach(id=>$(id).addEventListener("input",()=>syncClear($(id))));
+function resetFilters(s){
+  const S=s==="i"?I:M,ids=s==="i"?["iq","imin"]:["mq"],checks=s==="i"?["idrop"]:["mboss","mspawn"];
+  ids.forEach(id=>{$(id).value="";syncClear($(id))});
+  checks.forEach(id=>$(id).checked=false);
+  Object.values(S.f).forEach(set=>set.clear());
+  document.querySelectorAll('.chip[data-scope="'+(s==="i"?"i":"m")+'"]').forEach(c=>c.setAttribute("aria-pressed","false"));
+  s==="i"?iRun():mRun();
+}
+/* frozen column headers sit right under the frozen top area */
+const topEl=document.querySelector(".top");
+const setStick=()=>document.documentElement.style.setProperty("--stick",(20+topEl.offsetHeight)+"px");
+new ResizeObserver(setStick).observe(topEl);setStick();
 $("mq").addEventListener("input",debounce(mRun,150));$("mboss").addEventListener("change",mRun);$("mspawn").addEventListener("change",mRun);
 $("view-item").querySelectorAll("th button").forEach(b=>b.addEventListener("click",()=>{const k=+b.dataset.k;if(k===I.sortKey)I.sortDir=-I.sortDir;else{I.sortKey=k;I.sortDir=(k===4||k===3)?-1:1}iRun()}));
 $("view-mob").querySelectorAll("th button").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.k;if(k===M.sortKey)M.sortDir=-M.sortDir;else{M.sortKey=k;M.sortDir=1}mRun()}));

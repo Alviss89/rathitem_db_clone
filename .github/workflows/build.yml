@@ -1,18 +1,21 @@
 name: Build item lookup
 
 on:
-  schedule:
-    - cron: "0 1 * * 1"   # every Monday 01:00 UTC (08:00 WIB)
-  workflow_dispatch:       # adds a "Run workflow" button
+  workflow_dispatch:       # "Run workflow" button, also used by cron-job.org
 
 permissions:
-  contents: read
+  contents: write          # lets the build save Divine Pride data (dp/ folder) into the repo
   pages: write
   id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 180
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
@@ -23,6 +26,14 @@ jobs:
           python-version: "3.12"
       - run: pip install pyyaml
       - run: python build.py
+        env:
+          DP_API_KEY: ${{ secrets.DP_API_KEY }}
+      - name: Save Divine Pride data to the repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898699+github-actions[bot]@users.noreply.github.com"
+          git add dp
+          git diff --cached --quiet || (git commit -m "Update Divine Pride monster data" && git push)
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

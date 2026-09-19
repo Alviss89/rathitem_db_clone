@@ -1,4 +1,4 @@
-# Downloads rAthena renewal data (+ sprite names from ROenglishRE) and builds site/index.html
+# Downloads rAthena renewal data and builds site/index.html
 import json, os, re, subprocess, tempfile, datetime, yaml
 
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
@@ -13,9 +13,6 @@ def sparse_clone(url, *paths):
 
 src = sparse_clone("https://github.com/rathena/rathena.git",
                    "/db/re/item_db_*.yml", "/db/re/mob_db.yml", "/npc/re/mobs/", "/npc/re/scripts_monsters.conf")
-lua = sparse_clone("https://github.com/llchrisll/ROenglishRE.git",
-                   "/Additions/data/luafiles514/lua files/datainfo/npcidentity.lub",
-                   "/Additions/data/luafiles514/lua files/datainfo/jobname.lub")
 load = lambda p: yaml.load(open(os.path.join(src, p), encoding="utf-8"), Loader=Loader).get("Body") or []
 
 # ---- Items: [id, name, type, weight, sell]
@@ -31,22 +28,8 @@ for part in ("equip", "etc", "usable"):
 assert len(items) > 10000, f"only {len(items)} items, download probably broke"
 items.sort(key=lambda r: r[0])
 
-# ---- Sprite names: monster ID -> JT_ name -> sprite file name
-dinfo = os.path.join(lua, "Additions/data/luafiles514/lua files/datainfo/")
-ident = open(dinfo + "npcidentity.lub", encoding="latin-1").read()
-jobnm = open(dinfo + "jobname.lub", encoding="latin-1").read()
-id_to_jt = {int(v): k for k, v in re.findall(r"(JT_\w+)\s*=\s*(\d+)", ident)}
-jt_to_sprite = dict(re.findall(r'\[jobtbl\.(JT_\w+)\]\s*=\s*"([^"]*)"', jobnm))
-
-def sprite_of(mid, aegis):
-    jt = id_to_jt.get(mid)
-    name = jt_to_sprite.get(jt) if jt else None
-    if not name:
-        name = jt[3:] if jt else aegis
-    return name if name.isascii() else ""
-
 # ---- Monsters
-# mobs[id] = [name, level, mvp, spawns[[map,count]], hp, size, race, element, elementLevel, boss, sprite, drops[[item,rate]], mvpDrops[[item,rate]]]
+# mobs[id] = [name, level, mvp, spawns[[map,count]], hp, size, race, element, elementLevel, boss, 0 (unused), drops[[item,rate]], mvpDrops[[item,rate]]]
 mobs, aegis_to_mob, drops = {}, {}, {}
 for m in load("db/re/mob_db.yml"):
     mid = m["Id"]
@@ -61,7 +44,7 @@ for m in load("db/re/mob_db.yml"):
                 drops.setdefault(iid, []).append([mid, d["Rate"], kind])  # kind 1 = MVP reward
     mobs[mid] = [m.get("Name", m["AegisName"]), m.get("Level", 1), mvp, {}, m.get("Hp", 1),
                  m.get("Size", "Small"), m.get("Race", "Formless"), m.get("Element", "Neutral"), m.get("ElementLevel", 1),
-                 boss, sprite_of(mid, m["AegisName"]), norm, mvpd]
+                 boss, 0, norm, mvpd]
     aegis_to_mob[m["AegisName"].lower()] = mid
 
 # ---- Spawns: only files turned on in scripts_monsters.conf

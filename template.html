@@ -9,57 +9,82 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#eef2f8; --panel:#ffffff; --bar:#3d5f94; --bar-text:#ffffff;
-  --text:#1c2433; --muted:#5b6679; --line:#d6deea; --row:#f6f8fc; --detail:#f1f5fb;
-  --zeny:#8a6300; --focus:#2f6fd6; --mvp:#b3261e;
+  --bg:#f3f5f0; --panel:#ffffff; --bar-bg:#5f9f24; --bar-text:#ffffff; --title:#ffffff;
+  --text:#2b2f33; --muted:#666d74; --line:#e0e4dc; --row:#f8faf5; --detail:#eef5e6;
+  --zeny:#9a6a00; --focus:#3d7a14; --mvp:#c62839; --chip:#eef2ea; --glow:none; --toast:#2f5e0f;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#141a24; --panel:#1c2432; --bar:#2c4670; --bar-text:#eef3fb;
-    --text:#e4e9f2; --muted:#9aa6ba; --line:#2e3a4e; --row:#212b3b; --detail:#2a3650;
-    --zeny:#e0b64a; --focus:#7aa7ff; --mvp:#ff8a80;
+    --bg:#0a0c1d; --panel:#12152b; --bar-bg:linear-gradient(100deg,#1b1f45 0%,#2a2170 55%,#3a2c8f 100%); --bar-text:#e9e8ff;
+  --title:linear-gradient(90deg,#8fb4ff,#c9a8ff); --text:#e7e8f6; --muted:#9a9cc2; --line:#262a4d; --row:#161a34; --detail:#1d2044;
+  --zeny:#f3c457; --focus:#8b7dff; --mvp:#ff7d93; --chip:#1a1e3c; --toast:#3a2c8f;
+  --glow:radial-gradient(60% 40% at 15% 0%,rgba(98,82,255,.22),transparent 70%),radial-gradient(50% 35% at 90% 5%,rgba(64,140,255,.18),transparent 70%);
   }
 }
 :root[data-theme="dark"]{
-  --bg:#141a24; --panel:#1c2432; --bar:#2c4670; --bar-text:#eef3fb;
-  --text:#e4e9f2; --muted:#9aa6ba; --line:#2e3a4e; --row:#212b3b; --detail:#2a3650;
-  --zeny:#e0b64a; --focus:#7aa7ff; --mvp:#ff8a80;
+  --bg:#0a0c1d; --panel:#12152b; --bar-bg:linear-gradient(100deg,#1b1f45 0%,#2a2170 55%,#3a2c8f 100%); --bar-text:#e9e8ff;
+  --title:linear-gradient(90deg,#8fb4ff,#c9a8ff); --text:#e7e8f6; --muted:#9a9cc2; --line:#262a4d; --row:#161a34; --detail:#1d2044;
+  --zeny:#f3c457; --focus:#8b7dff; --mvp:#ff7d93; --chip:#1a1e3c; --toast:#3a2c8f;
+  --glow:radial-gradient(60% 40% at 15% 0%,rgba(98,82,255,.22),transparent 70%),radial-gradient(50% 35% at 90% 5%,rgba(64,140,255,.18),transparent 70%);
 }
 *{box-sizing:border-box}
 html{scrollbar-gutter:stable;overflow-y:scroll}
-body{margin:0;background:var(--bg);color:var(--text);
+body{margin:0;background:var(--glow) no-repeat,var(--bg);background-attachment:fixed;color:var(--text);
   font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.45}
+[hidden]{display:none!important}
 .wrap{max-width:1120px;margin:0 auto;padding:20px 14px 40px}
 .win{background:var(--panel);border:1px solid var(--line);border-radius:6px}
-.top{position:sticky;top:20px;box-shadow:0 -21px 0 1px var(--bg);z-index:2;background:var(--panel);border-radius:6px 6px 0 0;border-bottom:1px solid var(--line)}
-.title{border-radius:6px 6px 0 0;background:var(--bar);color:var(--bar-text);padding:10px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
-.title h1{margin:0;font-size:18px}
+.top{position:sticky;top:20px;z-index:2;background:var(--panel);border-radius:6px 6px 0 0;border-bottom:1px solid var(--line)}
+.top::before{content:"";position:absolute;left:-2px;right:-2px;top:-21px;height:21px;background:var(--glow) no-repeat,var(--bg);background-attachment:fixed}
+.title{border-radius:6px 6px 0 0;background:var(--bar-bg);color:var(--bar-text);padding:10px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.title h1{margin:0;font-size:18px;color:#fff;background:var(--title);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.tright{display:flex;align-items:center;gap:14px}
+.theme{all:unset;box-sizing:border-box;cursor:pointer;width:96px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:700;padding:5px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.45);color:var(--bar-text)}
+.theme:hover{background:rgba(255,255,255,.12)}
+.theme:focus-visible{outline:2px solid var(--bar-text);outline-offset:2px}
+.theme svg{width:14px;height:14px;flex:none}
 .title span{font-size:13px;opacity:.85}
+.tabs{display:flex;gap:4px;padding:10px 16px 0;border-bottom:1px solid var(--line)}
+.tab{all:unset;cursor:pointer;padding:8px 16px;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;color:var(--muted);font-weight:700;margin-bottom:-1px}
+.tab:hover{color:var(--text)}
+.tab[aria-selected="true"]{background:var(--panel);border-color:var(--line);color:var(--text)}
+.tab:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
 .controls{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;padding:14px 16px 8px}
 label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
 input,select,button{font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:7px 9px}
 input:focus,select:focus,button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 .info{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:4px 16px 10px;font-size:13px;color:var(--muted)}
+.switches{display:flex;gap:18px;flex-wrap:wrap}
+.mctl{grid-template-columns:1fr 1fr;align-items:end}
+.mctl .switches{justify-content:flex-end;padding-bottom:8px}
 .switch{flex-direction:row;align-items:center;gap:8px;cursor:pointer;color:var(--text);font-size:14px}
-.switch input{appearance:none;width:34px;height:20px;padding:0;border-radius:10px;position:relative;cursor:pointer;background:var(--line);border:none}
+.switch input{appearance:none;width:34px;height:20px;padding:0;border-radius:10px;position:relative;cursor:pointer;background:var(--line);border:none;flex:none}
 .switch input::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--panel);transition:left .15s}
 .switch input:checked{background:var(--focus)}
 .switch input:checked::after{left:17px}
+.chiprows{padding:2px 16px 8px;display:grid;gap:6px}
+.chiprow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.chiprow .lbl{width:96px;flex:none;font-size:13px;color:var(--muted)}
+.chiprow .gap{width:24px}
+.chip{font-size:13px;padding:3px 10px;border-radius:12px;cursor:pointer;background:var(--chip);border:1px solid var(--line)}
+.chip:hover{border-color:var(--focus)}
+.chip[aria-pressed="true"]{background:var(--focus);border-color:var(--focus);color:var(--panel)}
 .tablebox{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 table.main{table-layout:fixed;min-width:860px}
 .main .c-id{width:84px}.main .c-type{width:130px}.main .c-w{width:90px}.main .c-sell{width:130px}.main .c-act{width:200px}
+.main .c-lv{width:80px}.main .c-maps{width:42%}.main .c-det{width:110px}
 .main td{overflow:hidden;text-overflow:ellipsis}
 th{text-align:left;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);padding:0}
 th button{all:unset;cursor:pointer;display:block;width:100%;padding:8px 12px;box-sizing:border-box}
 th button:focus-visible{outline:2px solid var(--focus);outline-offset:-2px}
 th.num button,td.num{text-align:right}
-th.act{padding:8px 12px}
+th.plain{padding:8px 12px}
 td{padding:7px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
-td.name{white-space:normal}
-td.name a{color:inherit;text-decoration:none}
-td.name a:hover{text-decoration:underline;color:var(--focus)}
-td.name a:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+td.name,td.maps{white-space:normal}
+a.lnk{color:inherit;text-decoration:none}
+a.lnk:hover{text-decoration:underline;color:var(--focus)}
+a.lnk:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 tr.alt{background:var(--row)}
 td.sell{color:var(--zeny);font-weight:700}
 td.act{text-align:right}
@@ -68,30 +93,37 @@ td.act{text-align:right}
 .pill[aria-expanded="true"]{background:var(--focus);border-color:var(--focus);color:var(--panel)}
 .pill.done{border-color:var(--zeny);color:var(--zeny)}
 tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
-.drops{width:100%;font-size:14px;table-layout:fixed}
+.sub{width:100%;font-size:14px;table-layout:fixed}
+.sub th{padding:4px 8px;border-bottom:1px solid var(--line)}
+.sub th.num{text-align:right}
+.sub td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top;white-space:normal}
 .drops .c-id{width:64px}.drops .c-mob{width:34%}.drops .c-lv{width:64px}.drops .c-rate{width:76px}
-.drops td.mob{white-space:normal}
-.drops td.mid .map{margin:0;font-variant-numeric:tabular-nums}
-.drops td.mob a{color:inherit;text-decoration:none}
-.drops td.mob a:hover{text-decoration:underline;color:var(--focus)}
-.drops td.mob a:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
-.drops th{padding:4px 8px;border-bottom:1px solid var(--line)}
-.drops th.num{text-align:right}
-.drops td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
-.drops td.maps{white-space:normal;color:var(--muted)}
+.idbtn{margin:0!important;font-variant-numeric:tabular-nums}
 .map{font-size:13px;color:var(--muted);background:transparent;border:1px solid transparent;border-radius:4px;padding:1px 6px;margin:0 4px 2px 0;cursor:pointer}
-.nospawn{padding-left:7px}
 .map:hover{color:var(--focus);border-color:var(--line)}
 .map.done{color:var(--zeny);border-color:var(--zeny)}
+.nospawn{padding-left:7px;color:var(--muted)}
 .tag{font-size:11px;font-weight:700;color:var(--mvp);border:1px solid var(--mvp);border-radius:3px;padding:0 4px;margin-left:6px}
+.tag.boss{color:var(--zeny);border-color:var(--zeny)}
+.mdetail{display:grid;grid-template-columns:170px 1fr;gap:18px}
+.sprite{width:170px;height:170px;border:1px solid var(--line);border-radius:6px;background:var(--panel);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--muted);font-size:13px}
+.sprite img{max-width:100%;max-height:100%}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+.stat b{display:block;font-size:12px;color:var(--muted);font-weight:400}
+.subhead{font-size:13px;font-weight:700;margin:10px 0 4px}
+.subhead span{font-weight:400;color:var(--muted)}
+.itemdrops .c-rate{width:80px}.itemdrops .c-btn{width:100px}
+.itemdrops td.btn{text-align:right}
+.none{color:var(--muted);font-size:14px;padding:4px 0}
 .empty{padding:28px 16px;text-align:center;color:var(--muted)}
 .pager{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;gap:10px;border-radius:0 0 6px 6px}
 .pager button{cursor:pointer}
 .pager button:disabled{opacity:.4;cursor:default}
-#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:5;background:var(--bar);color:var(--bar-text);padding:8px 14px;border-radius:6px;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:5;background:var(--toast);color:var(--bar-text);padding:8px 14px;border-radius:6px;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .note{font-size:12px;color:var(--muted);margin-top:12px;padding:0 4px}
 .note a{color:var(--focus)}
-@media (max-width:640px){.controls{grid-template-columns:1fr 1fr}.controls label:first-child{grid-column:1/-1}}
+@media (max-width:640px){.controls{grid-template-columns:1fr 1fr}.controls label:first-child{grid-column:1/-1}.mdetail{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
 @media (prefers-reduced-motion:reduce){.switch input::after{transition:none}}
 </style>
 </head>
@@ -99,31 +131,68 @@ tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
 <div class="wrap">
   <div class="win">
     <div class="top">
-      <div class="title"><h1>Item lookup</h1><span>rAthena renewal data, built __DATE__</span></div>
-      <div class="controls">
-        <label>Name or ID<input id="q" type="search" placeholder="e.g. potion, 501" autocomplete="off"></label>
-        <label>Type<select id="type"></select></label>
-        <label>Sell price at least<input id="min" type="number" min="0" step="1000" placeholder="0"></label>
+      <div class="title"><h1>Alviss RO Tools</h1><div class="tright"><span>rAthena renewal data, built __DATE__</span><button class="theme" id="theme" type="button" aria-label="Switch light or dark mode"></button></div></div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-item" aria-controls="view-item" data-tab="item">Item DB</button>
+        <button class="tab" role="tab" id="tab-mob" aria-controls="view-mob" data-tab="mob">Monster DB</button>
       </div>
-      <div class="info"><span id="info"></span><label class="switch"><input id="dropOnly" type="checkbox">Dropped by monster</label></div>
+      <div id="ctl-item">
+        <div class="controls">
+          <label>Name or ID<input id="iq" type="search" placeholder="e.g. potion, 501" autocomplete="off"></label>
+          <label>Type<select id="itype"></select></label>
+          <label>Sell price at least<input id="imin" type="number" min="0" step="1000" placeholder="0"></label>
+        </div>
+        <div class="info"><span id="iinfo"></span><label class="switch"><input id="idrop" type="checkbox">Dropped by monster</label></div>
+      </div>
+      <div id="ctl-mob" hidden>
+        <div class="controls mctl">
+          <label>Name or ID<input id="mq" type="search" placeholder="e.g. poring, 1002" autocomplete="off"></label>
+          <div class="switches"><label class="switch"><input id="mboss" type="checkbox">Boss only</label><label class="switch"><input id="mspawn" type="checkbox">Normally spawned only</label></div>
+        </div>
+        <div class="chiprows">
+          <div class="chiprow"><span class="lbl">Size</span><span id="c-size" class="chiprow"></span><span class="gap"></span><span class="lbl">Element level</span><span id="c-elvl" class="chiprow"></span></div>
+          <div class="chiprow"><span class="lbl">Element</span><span id="c-elem" class="chiprow"></span></div>
+          <div class="chiprow"><span class="lbl">Race</span><span id="c-race" class="chiprow"></span></div>
+        </div>
+        <div class="info"><span id="minfo"></span></div>
+      </div>
     </div>
-    <div class="tablebox">
-      <table class="main">
-        <colgroup><col class="c-id"><col><col class="c-type"><col class="c-w"><col class="c-sell"><col class="c-act"></colgroup>
-        <thead><tr>
-          <th class="num"><button data-k="0">ID</button></th>
-          <th><button data-k="1">Name</button></th>
-          <th><button data-k="2">Type</button></th>
-          <th class="num"><button data-k="3">Weight</button></th>
-          <th class="num"><button data-k="4">Sell price</button></th>
-          <th class="act"><span hidden>Actions</span></th>
-        </tr></thead>
-        <tbody id="rows"></tbody>
-      </table>
+
+    <div id="view-item" role="tabpanel" aria-labelledby="tab-item">
+      <div class="tablebox">
+        <table class="main">
+          <colgroup><col class="c-id"><col><col class="c-type"><col class="c-w"><col class="c-sell"><col class="c-act"></colgroup>
+          <thead><tr>
+            <th class="num"><button data-k="0">ID</button></th>
+            <th><button data-k="1">Name</button></th>
+            <th><button data-k="2">Type</button></th>
+            <th class="num"><button data-k="3">Weight</button></th>
+            <th class="num"><button data-k="4">Sell price</button></th>
+            <th class="plain"><span hidden>Actions</span></th>
+          </tr></thead>
+          <tbody id="irows"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="iempty" hidden>No items match. Try a shorter name, set Type to All, or turn off "Dropped by monster".</div>
+      <div class="pager"><button id="iprev">Previous</button><span id="ipage"></span><button id="inext">Next</button></div>
     </div>
-    <div class="empty" id="empty" hidden>No items match. Try a shorter name, set Type to All, or turn off "Dropped by monster".</div>
-    <div class="pager">
-      <button id="prev">Previous</button><span id="page"></span><button id="next">Next</button>
+
+    <div id="view-mob" role="tabpanel" aria-labelledby="tab-mob" hidden>
+      <div class="tablebox">
+        <table class="main">
+          <colgroup><col class="c-id"><col><col class="c-lv"><col class="c-maps"><col class="c-det"></colgroup>
+          <thead><tr>
+            <th class="num"><button data-k="id">ID</button></th>
+            <th><button data-k="name">Name</button></th>
+            <th class="num"><button data-k="lv">Level</button></th>
+            <th class="plain">Spawn maps</th>
+            <th class="plain"><span hidden>Detail</span></th>
+          </tr></thead>
+          <tbody id="mrows"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="mempty" hidden>No monsters match. Try a shorter name or clear some filters.</div>
+      <div class="pager"><button id="mprev">Previous</button><span id="mpage"></span><button id="mnext">Next</button></div>
     </div>
   </div>
   <div id="toast" role="status" hidden></div>
@@ -134,50 +203,144 @@ tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
 <script>
 const DB=__DATA__;
 const ITEMS=DB.items, DROPS=DB.drops, MOBS=DB.mobs;
+const ITEM_BY_ID={};ITEMS.forEach(r=>ITEM_BY_ID[r[0]]=r);
 const TYPE_NAMES={Healing:"Healing",Usable:"Usable",DelayConsume:"Delayed use",Etc:"Etc",Armor:"Armor",Weapon:"Weapon",Card:"Card",PetEgg:"Pet egg",PetArmor:"Pet armor",Ammo:"Ammo",ShadowGear:"Shadow gear",Cash:"Cash shop"};
+const SIZES=["Small","Medium","Large"];
+const ELEMS=[["Neutral","Neutral"],["Water","Water"],["Earth","Earth"],["Fire","Fire"],["Wind","Wind"],["Poison","Poison"],["Holy","Holy"],["Dark","Shadow"],["Ghost","Ghost"],["Undead","Undead"]];
+const RACES=[["Formless","Formless"],["Undead","Undead"],["Brute","Brute"],["Plant","Plant"],["Insect","Insect"],["Fish","Fish"],["Demon","Demon"],["Demihuman","Demi-Human"],["Angel","Angel"],["Dragon","Dragon"]];
+const LABEL=Object.fromEntries([...ELEMS,...RACES,["Player_Human","Human"],["Player_Doram","Doram"]]);
+const lbl=v=>LABEL[v]||v;
 const PER=100;
 const $=id=>document.getElementById(id);
-const q=$("q"),typeSel=$("type"),minIn=$("min"),dropOnly=$("dropOnly");
-let sortKey=0,sortDir=1,page=0,list=[];
-const open=new Set();
-const counts={};ITEMS.forEach(r=>counts[r[2]]=(counts[r[2]]||0)+1);
-typeSel.innerHTML='<option value="">All ('+ITEMS.length.toLocaleString()+')</option>'+
-  Object.keys(counts).sort((a,b)=>(TYPE_NAMES[a]||a).localeCompare(TYPE_NAMES[b]||b))
-  .map(t=>'<option value="'+t+'">'+(TYPE_NAMES[t]||t)+' ('+counts[t].toLocaleString()+')</option>').join("");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pct=r=>(r/100).toFixed(2).replace(/\.?0+$/,"")+"%";
-function run(){
-  const s=q.value.trim().toLowerCase(),t=typeSel.value,m=parseInt(minIn.value,10)||0,d=dropOnly.checked;
-  const isId=/^\d+$/.test(s);
-  list=ITEMS.filter(r=>(!t||r[2]===t)&&r[4]>=m&&(!d||DROPS[r[0]])&&(!s||(isId?String(r[0]).startsWith(s):r[1].toLowerCase().includes(s))));
-  list.sort((a,b)=>{const x=a[sortKey],y=b[sortKey];return (typeof x==="string"?x.localeCompare(y):x-y)*sortDir||a[0]-b[0]});
-  page=0;draw();
+const debounce=(fn,ms)=>{let t;return()=>{clearTimeout(t);t=setTimeout(fn,ms)}};
+const itemLink=id=>{const it=ITEM_BY_ID[id];return '<a class="lnk" href="https://www.divine-pride.net/database/item/'+id+'" target="_blank" rel="noopener">'+esc(it?it[1]:"Item "+id)+'</a>'};
+const mobLink=id=>'<a class="lnk" href="https://www.divine-pride.net/database/monster/'+id+'" target="_blank" rel="noopener">'+esc(MOBS[id][0])+'</a>';
+const idBtn=id=>'<button class="map idbtn" data-mi="'+id+'" title="Copy @mi '+id+'">'+id+'</button>';
+const mapBtns=spawns=>spawns.length?spawns.map(([mp,n])=>'<button class="map" data-warp="'+esc(mp)+'" title="Copy @warp '+esc(mp)+'">'+esc(mp)+' (x'+n+')</button>').join(""):'<span class="nospawn">No normal spawn</span>';
+function pagerDraw(p,list,page){
+  const pages=Math.max(1,Math.ceil(list.length/PER));
+  $(p+"page").textContent="Page "+(page+1)+" of "+pages;
+  $(p+"prev").disabled=page===0;$(p+"next").disabled=page>=pages-1;
+  return list.slice(page*PER,page*PER+PER);
 }
-function dropTable(id){
-  const rows=(DROPS[id]||[]).slice().sort((a,b)=>(MOBS[b[0]][3].length>0)-(MOBS[a[0]][3].length>0)||b[1]-a[1]);
+function sortMarks(view,key,dir){view.querySelectorAll("th button").forEach(b=>{b.textContent=b.textContent.replace(/ [▲▼]$/,"")+(b.dataset.k==String(key)?(dir>0?" ▲":" ▼"):"")})}
+
+/* ---------- Item DB ---------- */
+const I={sortKey:0,sortDir:1,page:0,list:[],open:null};
+(function(){
+  const counts={};ITEMS.forEach(r=>counts[r[2]]=(counts[r[2]]||0)+1);
+  $("itype").innerHTML='<option value="">All ('+ITEMS.length.toLocaleString()+')</option>'+
+    Object.keys(counts).sort((a,b)=>(TYPE_NAMES[a]||a).localeCompare(TYPE_NAMES[b]||b))
+    .map(t=>'<option value="'+t+'">'+(TYPE_NAMES[t]||t)+' ('+counts[t].toLocaleString()+')</option>').join("");
+})();
+function iRun(){
+  const s=$("iq").value.trim().toLowerCase(),t=$("itype").value,m=parseInt($("imin").value,10)||0,d=$("idrop").checked;
+  const isId=/^\d+$/.test(s);
+  I.list=ITEMS.filter(r=>(!t||r[2]===t)&&r[4]>=m&&(!d||DROPS[r[0]])&&(!s||(isId?String(r[0]).startsWith(s):r[1].toLowerCase().includes(s))));
+  I.list.sort((a,b)=>{const x=a[I.sortKey],y=b[I.sortKey];return (typeof x==="string"?x.localeCompare(y):x-y)*I.sortDir||a[0]-b[0]});
+  I.page=0;iDraw();
+}
+function iDropTable(id){
   const seen=new Set();
-  return '<table class="drops"><colgroup><col class="c-id"><col class="c-mob"><col class="c-lv"><col class="c-rate"><col></colgroup><thead><tr><th class="num">ID</th><th>Monster</th><th class="num">Level</th><th class="num">Rate</th><th>Maps</th></tr></thead><tbody>'+
-    rows.filter(([mid,rate,kind])=>{const k=MOBS[mid][0]+'|'+MOBS[mid][1]+'|'+rate+'|'+kind+'|'+JSON.stringify(MOBS[mid][3]);return seen.has(k)?false:seen.add(k)}).map(([mid,rate,kind])=>{const m=MOBS[mid];
-      const maps=m[3].length?m[3].map(([map,n])=>'<button class="map" data-warp="'+esc(map)+'" title="Copy @warp '+esc(map)+'">'+esc(map)+' (x'+n+')</button>').join(""):'<span class="nospawn">No normal spawn</span>';
-      return '<tr><td class="num mid"><button class="map" data-mi="'+mid+'" title="Copy @mi '+mid+'">'+mid+'</button></td><td class="mob"><a href="https://www.divine-pride.net/database/monster/'+mid+'" target="_blank" rel="noopener">'+esc(m[0])+'</a>'+(kind?'<span class="tag">MVP reward</span>':m[2]?'<span class="tag">MVP</span>':'')+'</td><td class="num">'+m[1]+'</td><td class="num">'+pct(rate)+'</td><td class="maps">'+maps+'</td></tr>'}).join("")+
+  const rows=(DROPS[id]||[]).slice().sort((a,b)=>(MOBS[b[0]][3].length>0)-(MOBS[a[0]][3].length>0)||b[1]-a[1])
+    .filter(([mid,rate,kind])=>{const k=MOBS[mid][0]+'|'+MOBS[mid][1]+'|'+rate+'|'+kind+'|'+JSON.stringify(MOBS[mid][3]);return seen.has(k)?false:seen.add(k)});
+  return '<table class="sub drops"><colgroup><col class="c-id"><col class="c-mob"><col class="c-lv"><col class="c-rate"><col></colgroup><thead><tr><th class="num">ID</th><th>Monster</th><th class="num">Level</th><th class="num">Rate</th><th>Maps</th></tr></thead><tbody>'+
+    rows.map(([mid,rate,kind])=>{const m=MOBS[mid];
+      return '<tr><td class="num">'+idBtn(mid)+'</td><td>'+mobLink(mid)+(kind?'<span class="tag">MVP reward</span>':m[2]?'<span class="tag">MVP</span>':'')+'</td><td class="num">'+m[1]+'</td><td class="num">'+pct(rate)+'</td><td>'+mapBtns(m[3])+'</td></tr>'}).join("")+
     '</tbody></table>';
 }
-function draw(){
-  const pages=Math.max(1,Math.ceil(list.length/PER));
-  const slice=list.slice(page*PER,page*PER+PER);
-  $("rows").innerHTML=slice.map((r,i)=>{
-    const has=!!DROPS[r[0]],isOpen=has&&open.has(r[0]);
-    return '<tr class="'+(i%2?'alt':'')+'"><td class="num">'+r[0]+'</td><td class="name"><a href="https://www.divine-pride.net/database/item/'+r[0]+'" target="_blank" rel="noopener">'+esc(r[1])+'</a></td><td>'+(TYPE_NAMES[r[2]]||r[2])+'</td><td class="num">'+(r[3]/10).toLocaleString()+'</td><td class="num sell">'+r[4].toLocaleString()+' z</td><td class="act">'+
-      (has?'<button class="pill" data-drop="'+r[0]+'" aria-expanded="'+isOpen+'">Drop from</button>':'')+
+function iDraw(){
+  const slice=pagerDraw("i",I.list,I.page);
+  $("irows").innerHTML=slice.map((r,i)=>{
+    const has=!!DROPS[r[0]],isOpen=has&&I.open===r[0];
+    return '<tr class="'+(i%2?'alt':'')+'"><td class="num">'+r[0]+'</td><td class="name">'+itemLink(r[0])+'</td><td>'+(TYPE_NAMES[r[2]]||r[2])+'</td><td class="num">'+(r[3]/10).toLocaleString()+'</td><td class="num sell">'+r[4].toLocaleString()+' z</td><td class="act">'+
+      (has?'<button class="pill" data-idrop="'+r[0]+'" aria-expanded="'+isOpen+'">Drop from</button>':'')+
       '<button class="pill" data-copy="'+r[0]+'" title="Copy @alootid +'+r[0]+'">@alootid</button></td></tr>'+
-      (isOpen?'<tr class="detail"><td colspan="6">'+dropTable(r[0])+'</td></tr>':'');
+      (isOpen?'<tr class="detail"><td colspan="6">'+iDropTable(r[0])+'</td></tr>':'');
   }).join("");
-  $("empty").hidden=list.length>0;
-  $("info").textContent=list.length.toLocaleString()+" items found";
-  $("page").textContent="Page "+(page+1)+" of "+pages;
-  $("prev").disabled=page===0;$("next").disabled=page>=pages-1;
-  document.querySelectorAll("th button").forEach(b=>{const k=+b.dataset.k;b.textContent=b.textContent.replace(/ [▲▼]$/,"")+(k===sortKey?(sortDir>0?" ▲":" ▼"):"")});
+  $("iempty").hidden=I.list.length>0;
+  $("iinfo").textContent=I.list.length.toLocaleString()+" items found";
+  sortMarks($("view-item"),I.sortKey,I.sortDir);
 }
+
+/* ---------- Monster DB ---------- */
+const MLIST=Object.keys(MOBS).map(Number);
+const M={sortKey:"id",sortDir:1,page:0,list:[],open:null,f:{size:new Set(),elvl:new Set(),elem:new Set(),race:new Set()}};
+function chips(box,key,pairs){
+  $(box).innerHTML=pairs.map(([v,t])=>'<button class="chip" data-f="'+key+'" data-v="'+v+'" aria-pressed="false">'+t+'</button>').join("");
+}
+chips("c-size","size",SIZES.map(s=>[s,s]));
+chips("c-elvl","elvl",[1,2,3,4].map(n=>[n,n]));
+chips("c-elem","elem",ELEMS);
+chips("c-race","race",RACES);
+function mRun(){
+  const s=$("mq").value.trim().toLowerCase(),boss=$("mboss").checked,sp=$("mspawn").checked,f=M.f;
+  const isId=/^\d+$/.test(s);
+  M.list=MLIST.filter(id=>{const m=MOBS[id];
+    return (!boss||m[9])&&(!sp||m[3].length)&&(!f.size.size||f.size.has(m[5]))&&(!f.race.size||f.race.has(m[6]))&&
+      (!f.elem.size||f.elem.has(m[7]))&&(!f.elvl.size||f.elvl.has(String(m[8])))&&
+      (!s||(isId?String(id).startsWith(s):m[0].toLowerCase().includes(s)))});
+  const k=M.sortKey,d=M.sortDir;
+  M.list.sort((a,b)=>(k==="name"?MOBS[a][0].localeCompare(MOBS[b][0]):k==="lv"?MOBS[a][1]-MOBS[b][1]:a-b)*d||a-b);
+  M.page=0;mDraw();
+}
+function itemRows(list){
+  if(!list.length)return '<div class="none">No drops</div>';
+  return '<table class="sub itemdrops"><colgroup><col><col class="c-rate"><col class="c-btn"></colgroup><thead><tr><th>Item</th><th class="num">Rate</th><th><span hidden>Copy</span></th></tr></thead><tbody>'+
+    list.slice().sort((a,b)=>b[1]-a[1]).map(([iid,rate])=>'<tr><td>'+itemLink(iid)+'</td><td class="num">'+pct(rate)+'</td><td class="btn"><button class="pill" data-copy="'+iid+'" title="Copy @alootid +'+iid+'">@alootid</button></td></tr>').join("")+
+    '</tbody></table>';
+}
+function spriteSrc(name,step){
+  const c=[...new Set([name.toUpperCase(),name,name.toLowerCase()])];
+  return step<c.length?"https://nn.ai4rei.net/dev/npclist/i/"+encodeURIComponent(c[step])+".gif":null;
+}
+function mDetail(id){
+  const m=MOBS[id];
+  const img=m[10]?'<img alt="'+esc(m[0])+'" src="'+spriteSrc(m[10],0)+'" data-sprite="'+esc(m[10])+'" data-step="0">':'No image';
+  return '<div class="mdetail"><div class="sprite">'+img+'</div><div>'+
+    '<div class="stats"><div class="stat"><b>Race</b>'+lbl(m[6])+'</div><div class="stat"><b>Element</b>'+lbl(m[7])+' '+m[8]+'</div><div class="stat"><b>Size</b>'+m[5]+'</div><div class="stat"><b>HP</b>'+m[4].toLocaleString()+'</div></div>'+
+    (m[2]?'<div class="subhead">MVP rewards <span>(go straight to the MVP killer\'s inventory)</span></div>'+itemRows(m[12]):'')+
+    '<div class="subhead">Drops</div>'+itemRows(m[11])+
+    '</div></div>';
+}
+function mDraw(){
+  const slice=pagerDraw("m",M.list,M.page);
+  $("mrows").innerHTML=slice.map((id,i)=>{const m=MOBS[id],isOpen=M.open===id;
+    return '<tr class="'+(i%2?'alt':'')+'"><td class="num">'+idBtn(id)+'</td><td class="name">'+mobLink(id)+(m[2]?'<span class="tag">MVP</span>':m[9]?'<span class="tag boss">Boss</span>':'')+'</td><td class="num">'+m[1]+'</td><td class="maps">'+mapBtns(m[3])+'</td><td class="act"><button class="pill" data-mdet="'+id+'" aria-expanded="'+isOpen+'">Detail</button></td></tr>'+
+      (isOpen?'<tr class="detail"><td colspan="5">'+mDetail(id)+'</td></tr>':'');
+  }).join("");
+  $("mempty").hidden=M.list.length>0;
+  $("minfo").textContent=M.list.length.toLocaleString()+" monsters found";
+  sortMarks($("view-mob"),M.sortKey,M.sortDir);
+}
+/* sprite fallback: try other file name spellings, then show "No image" */
+document.addEventListener("error",e=>{
+  const img=e.target;if(!img.dataset||!img.dataset.sprite)return;
+  const next=spriteSrc(img.dataset.sprite,+img.dataset.step+1);
+  if(next){img.dataset.step=+img.dataset.step+1;img.src=next}else img.parentNode.textContent="No image";
+},true);
+
+/* ---------- Theme ---------- */
+const SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+const isDark=()=>(document.documentElement.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"))==="dark";
+function paintThemeBtn(){const d=isDark();$("theme").innerHTML=(d?SUN+"Light":MOON+"Dark");$("theme").title=d?"Switch to light mode":"Switch to dark mode"}
+try{const s=localStorage.getItem("theme");if(s)document.documentElement.dataset.theme=s}catch(e){}
+paintThemeBtn();
+$("theme").addEventListener("click",()=>{const next=isDark()?"light":"dark";document.documentElement.dataset.theme=next;try{localStorage.setItem("theme",next)}catch(e){}paintThemeBtn()});
+
+/* ---------- Tabs ---------- */
+function showTab(t){
+  const mob=t==="mob";
+  $("tab-item").setAttribute("aria-selected",!mob);$("tab-mob").setAttribute("aria-selected",mob);
+  $("ctl-item").hidden=mob;$("view-item").hidden=mob;$("ctl-mob").hidden=!mob;$("view-mob").hidden=!mob;
+  history.replaceState(null,"",mob?"#monster":location.pathname+location.search);
+}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+
+/* ---------- Clicks and copy ---------- */
 let toastTimer;
 function flash(b,msg){
   b.classList.add("done");setTimeout(()=>b.classList.remove("done"),1200);
@@ -188,19 +351,22 @@ async function copy(text){
     const t=document.createElement("textarea");t.value=text;document.body.appendChild(t);t.select();
     let ok=false;try{ok=document.execCommand("copy")}catch(e2){}t.remove();return ok}
 }
-$("rows").addEventListener("click",async e=>{
+document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
-  if(b.dataset.drop){const id=+b.dataset.drop,was=open.has(id);open.clear();if(!was)open.add(id);draw()}
+  if(b.dataset.idrop){const id=+b.dataset.idrop;I.open=I.open===id?null:id;iDraw();return}
+  if(b.dataset.mdet){const id=+b.dataset.mdet;M.open=M.open===id?null:id;mDraw();return}
+  if(b.dataset.f){const set=M.f[b.dataset.f],v=b.dataset.v,on=!set.has(v);on?set.add(v):set.delete(v);b.setAttribute("aria-pressed",on);mRun();return}
   const text=b.dataset.mi?"@mi "+b.dataset.mi:b.dataset.warp?"@warp "+b.dataset.warp:b.dataset.copy?"@alootid +"+b.dataset.copy:null;
   if(text){const ok=await copy(text);flash(b,ok?"Copied: "+text:"Copy failed")}
 });
-let timer;q.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(run,150)});
-typeSel.addEventListener("change",run);dropOnly.addEventListener("change",run);
-minIn.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(run,200)});
-document.querySelectorAll("th button").forEach(b=>b.addEventListener("click",()=>{const k=+b.dataset.k;if(k===sortKey)sortDir=-sortDir;else{sortKey=k;sortDir=(k===4||k===3)?-1:1}run()}));
-$("prev").onclick=()=>{page--;draw();window.scrollTo(0,0)};
-$("next").onclick=()=>{page++;draw();window.scrollTo(0,0)};
-run();
+$("iq").addEventListener("input",debounce(iRun,150));$("imin").addEventListener("input",debounce(iRun,200));
+$("itype").addEventListener("change",iRun);$("idrop").addEventListener("change",iRun);
+$("mq").addEventListener("input",debounce(mRun,150));$("mboss").addEventListener("change",mRun);$("mspawn").addEventListener("change",mRun);
+$("view-item").querySelectorAll("th button").forEach(b=>b.addEventListener("click",()=>{const k=+b.dataset.k;if(k===I.sortKey)I.sortDir=-I.sortDir;else{I.sortKey=k;I.sortDir=(k===4||k===3)?-1:1}iRun()}));
+$("view-mob").querySelectorAll("th button").forEach(b=>b.addEventListener("click",()=>{const k=b.dataset.k;if(k===M.sortKey)M.sortDir=-M.sortDir;else{M.sortKey=k;M.sortDir=1}mRun()}));
+$("iprev").onclick=()=>{I.page--;iDraw();window.scrollTo(0,0)};$("inext").onclick=()=>{I.page++;iDraw();window.scrollTo(0,0)};
+$("mprev").onclick=()=>{M.page--;mDraw();window.scrollTo(0,0)};$("mnext").onclick=()=>{M.page++;mDraw();window.scrollTo(0,0)};
+iRun();mRun();showTab(location.hash==="#monster"?"mob":"item");
 </script>
 <script data-goatcounter="https://alviss89.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>

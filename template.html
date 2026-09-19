@@ -297,7 +297,7 @@ function itemRows(list){
 }
 function mDetail(id){
   const m=MOBS[id];
-  const img='<img referrerpolicy="no-referrer" alt="'+esc(m[0])+'" src="https://static.divine-pride.net/images/mobs/png/'+id+'.png" data-sprite="1">';
+  const img='<img referrerpolicy="no-referrer" alt="'+esc(m[0])+'" src="'+esc((DB.img||{})[id]||"https://static.divine-pride.net/images/mobs/png/"+id+".png")+'" data-sprite="1">';
   return '<div class="mdetail"><div class="sprite">'+img+'</div><div>'+
     '<div class="stats"><div class="stat"><b>Race</b>'+lbl(m[6])+'</div><div class="stat"><b>Element</b>'+lbl(m[7])+' '+m[8]+'</div><div class="stat"><b>Size</b>'+m[5]+'</div><div class="stat"><b>HP</b>'+m[4].toLocaleString()+'</div></div>'+
     (m[2]?'<div class="subhead">MVP rewards <span>(go straight to the MVP killer\'s inventory)</span></div>'+itemRows(m[12]):'')+

@@ -105,6 +105,8 @@ tr.detail>td{background:var(--detail);padding:10px 16px 14px;white-space:normal}
 .nospawn{padding-left:7px;color:var(--muted)}
 .tag{font-size:11px;font-weight:700;color:var(--mvp);border:1px solid var(--mvp);border-radius:3px;padding:0 4px;margin-left:6px}
 .tag.boss{color:var(--zeny);border-color:var(--zeny)}
+.tag.dp{color:var(--focus);border-color:var(--focus)}
+.srcnote{font-size:12px;color:var(--muted);margin-top:8px}
 .mdetail{display:grid;grid-template-columns:170px 1fr;gap:18px}
 .sprite{width:170px;height:170px;border:1px solid var(--line);border-radius:6px;background:var(--panel);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--muted);font-size:13px}
 .sprite img{max-width:100%;max-height:100%}
@@ -215,7 +217,8 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pct=r=>(r/100).toFixed(2).replace(/\.?0+$/,"")+"%";
 const debounce=(fn,ms)=>{let t;return()=>{clearTimeout(t);t=setTimeout(fn,ms)}};
-const itemLink=id=>{const it=ITEM_BY_ID[id];return '<a class="lnk" href="https://www.divine-pride.net/database/item/'+id+'" target="_blank" rel="noopener">'+esc(it?it[1]:"Item "+id)+'</a>'};
+const XNAMES=DB.xnames||{};
+const itemLink=id=>{const it=ITEM_BY_ID[id];return '<a class="lnk" href="https://www.divine-pride.net/database/item/'+id+'" target="_blank" rel="noopener">'+esc(it?it[1]:XNAMES[id]||"Item "+id)+'</a>'};
 const mobLink=id=>'<a class="lnk" href="https://www.divine-pride.net/database/monster/'+id+'" target="_blank" rel="noopener">'+esc(MOBS[id][0])+'</a>';
 const idBtn=id=>'<button class="map idbtn" data-mi="'+id+'" title="Copy @mi '+id+'">'+id+'</button>';
 const mapBtns=spawns=>spawns.length?spawns.map(([mp,n])=>'<button class="map" data-warp="'+esc(mp)+'" title="Copy @warp '+esc(mp)+'">'+esc(mp)+' (x'+n+')</button>').join(""):'<span class="nospawn">No normal spawn</span>';
@@ -299,12 +302,13 @@ function mDetail(id){
     '<div class="stats"><div class="stat"><b>Race</b>'+lbl(m[6])+'</div><div class="stat"><b>Element</b>'+lbl(m[7])+' '+m[8]+'</div><div class="stat"><b>Size</b>'+m[5]+'</div><div class="stat"><b>HP</b>'+m[4].toLocaleString()+'</div></div>'+
     (m[2]?'<div class="subhead">MVP rewards <span>(go straight to the MVP killer\'s inventory)</span></div>'+itemRows(m[12]):'')+
     '<div class="subhead">Drops</div>'+itemRows(m[11])+
+    (m[13]?'<div class="srcnote">Not in rAthena yet. Data from Divine Pride (official server), so it may differ from your server.</div>':'')+
     '</div></div>';
 }
 function mDraw(){
   const slice=pagerDraw("m",M.list,M.page);
   $("mrows").innerHTML=slice.map((id,i)=>{const m=MOBS[id],isOpen=M.open===id;
-    return '<tr class="'+(i%2?'alt':'')+'" data-mrow="'+id+'"><td class="num">'+idBtn(id)+'</td><td class="name">'+mobLink(id)+(m[2]?'<span class="tag">MVP</span>':m[9]?'<span class="tag boss">Boss</span>':'')+'</td><td class="num">'+m[1]+'</td><td class="maps">'+mapBtns(m[3])+'</td><td class="act"><button class="pill" data-mdet="'+id+'" aria-expanded="'+isOpen+'">Detail</button></td></tr>'+
+    return '<tr class="'+(i%2?'alt':'')+'" data-mrow="'+id+'"><td class="num">'+idBtn(id)+'</td><td class="name">'+mobLink(id)+(m[2]?'<span class="tag">MVP</span>':m[9]?'<span class="tag boss">Boss</span>':'')+(m[13]?'<span class="tag dp" title="Not in rAthena yet. Data from Divine Pride.">DP</span>':'')+'</td><td class="num">'+m[1]+'</td><td class="maps">'+mapBtns(m[3])+'</td><td class="act"><button class="pill" data-mdet="'+id+'" aria-expanded="'+isOpen+'">Detail</button></td></tr>'+
       (isOpen?'<tr class="detail"><td colspan="5">'+mDetail(id)+'</td></tr>':'');
   }).join("");
   $("mempty").hidden=M.list.length>0;

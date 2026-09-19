@@ -255,7 +255,7 @@ function iDraw(){
   const slice=pagerDraw("i",I.list,I.page);
   $("irows").innerHTML=slice.map((r,i)=>{
     const has=!!DROPS[r[0]],isOpen=has&&I.open===r[0];
-    return '<tr class="'+(i%2?'alt':'')+'"><td class="num">'+r[0]+'</td><td class="name">'+itemLink(r[0])+'</td><td>'+(TYPE_NAMES[r[2]]||r[2])+'</td><td class="num">'+(r[3]/10).toLocaleString()+'</td><td class="num sell">'+r[4].toLocaleString()+' z</td><td class="act">'+
+    return '<tr class="'+(i%2?'alt':'')+'" data-irow="'+r[0]+'"><td class="num">'+r[0]+'</td><td class="name">'+itemLink(r[0])+'</td><td>'+(TYPE_NAMES[r[2]]||r[2])+'</td><td class="num">'+(r[3]/10).toLocaleString()+'</td><td class="num sell">'+r[4].toLocaleString()+' z</td><td class="act">'+
       (has?'<button class="pill" data-idrop="'+r[0]+'" aria-expanded="'+isOpen+'">Drop from</button>':'')+
       '<button class="pill" data-copy="'+r[0]+'" title="Copy @alootid +'+r[0]+'">@alootid</button></td></tr>'+
       (isOpen?'<tr class="detail"><td colspan="6">'+iDropTable(r[0])+'</td></tr>':'');
@@ -292,13 +292,9 @@ function itemRows(list){
     list.slice().sort((a,b)=>b[1]-a[1]).map(([iid,rate])=>'<tr><td>'+itemLink(iid)+'</td><td class="num">'+pct(rate)+'</td><td class="btn"><button class="pill" data-copy="'+iid+'" title="Copy @alootid +'+iid+'">@alootid</button></td></tr>').join("")+
     '</tbody></table>';
 }
-function spriteSrc(name,step){
-  const c=[...new Set([name.toUpperCase(),name,name.toLowerCase()])];
-  return step<c.length?"https://nn.ai4rei.net/dev/npclist/i/"+encodeURIComponent(c[step])+".gif":null;
-}
 function mDetail(id){
   const m=MOBS[id];
-  const img=m[10]?'<img referrerpolicy="no-referrer" alt="'+esc(m[0])+'" src="'+spriteSrc(m[10],0)+'" data-sprite="'+esc(m[10])+'" data-step="0">':'No image';
+  const img='<img referrerpolicy="no-referrer" alt="'+esc(m[0])+'" src="https://static.divine-pride.net/images/mobs/png/'+id+'.png" data-sprite="1">';
   return '<div class="mdetail"><div class="sprite">'+img+'</div><div>'+
     '<div class="stats"><div class="stat"><b>Race</b>'+lbl(m[6])+'</div><div class="stat"><b>Element</b>'+lbl(m[7])+' '+m[8]+'</div><div class="stat"><b>Size</b>'+m[5]+'</div><div class="stat"><b>HP</b>'+m[4].toLocaleString()+'</div></div>'+
     (m[2]?'<div class="subhead">MVP rewards <span>(go straight to the MVP killer\'s inventory)</span></div>'+itemRows(m[12]):'')+
@@ -308,18 +304,17 @@ function mDetail(id){
 function mDraw(){
   const slice=pagerDraw("m",M.list,M.page);
   $("mrows").innerHTML=slice.map((id,i)=>{const m=MOBS[id],isOpen=M.open===id;
-    return '<tr class="'+(i%2?'alt':'')+'"><td class="num">'+idBtn(id)+'</td><td class="name">'+mobLink(id)+(m[2]?'<span class="tag">MVP</span>':m[9]?'<span class="tag boss">Boss</span>':'')+'</td><td class="num">'+m[1]+'</td><td class="maps">'+mapBtns(m[3])+'</td><td class="act"><button class="pill" data-mdet="'+id+'" aria-expanded="'+isOpen+'">Detail</button></td></tr>'+
+    return '<tr class="'+(i%2?'alt':'')+'" data-mrow="'+id+'"><td class="num">'+idBtn(id)+'</td><td class="name">'+mobLink(id)+(m[2]?'<span class="tag">MVP</span>':m[9]?'<span class="tag boss">Boss</span>':'')+'</td><td class="num">'+m[1]+'</td><td class="maps">'+mapBtns(m[3])+'</td><td class="act"><button class="pill" data-mdet="'+id+'" aria-expanded="'+isOpen+'">Detail</button></td></tr>'+
       (isOpen?'<tr class="detail"><td colspan="5">'+mDetail(id)+'</td></tr>':'');
   }).join("");
   $("mempty").hidden=M.list.length>0;
   $("minfo").textContent=M.list.length.toLocaleString()+" monsters found";
   sortMarks($("view-mob"),M.sortKey,M.sortDir);
 }
-/* sprite fallback: try other file name spellings, then show "No image" */
+/* picture fallback: show "No image" if it fails to load */
 document.addEventListener("error",e=>{
   const img=e.target;if(!img.dataset||!img.dataset.sprite)return;
-  const next=spriteSrc(img.dataset.sprite,+img.dataset.step+1);
-  if(next){img.dataset.step=+img.dataset.step+1;img.src=next}else img.parentNode.textContent="No image";
+  img.parentNode.textContent="No image";
 },true);
 
 /* ---------- Theme ---------- */
@@ -340,6 +335,14 @@ function showTab(t){
 }
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
 
+/* ---------- Scroll an opened row to just under the frozen header ---------- */
+function scrollToRow(sel){
+  const row=document.querySelector(sel);if(!row)return;
+  const headerBottom=document.querySelector(".top").getBoundingClientRect().bottom;
+  const smooth=!matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({top:window.scrollY+row.getBoundingClientRect().top-headerBottom,behavior:smooth?"smooth":"auto"});
+}
+
 /* ---------- Clicks and copy ---------- */
 let toastTimer;
 function flash(b,msg){
@@ -353,8 +356,8 @@ async function copy(text){
 }
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button");if(!b)return;
-  if(b.dataset.idrop){const id=+b.dataset.idrop;I.open=I.open===id?null:id;iDraw();return}
-  if(b.dataset.mdet){const id=+b.dataset.mdet;M.open=M.open===id?null:id;mDraw();return}
+  if(b.dataset.idrop){const id=+b.dataset.idrop;I.open=I.open===id?null:id;iDraw();if(I.open)scrollToRow('[data-irow="'+id+'"]');return}
+  if(b.dataset.mdet){const id=+b.dataset.mdet;M.open=M.open===id?null:id;mDraw();if(M.open)scrollToRow('[data-mrow="'+id+'"]');return}
   if(b.dataset.f){const set=M.f[b.dataset.f],v=b.dataset.v,on=!set.has(v);on?set.add(v):set.delete(v);b.setAttribute("aria-pressed",on);mRun();return}
   const text=b.dataset.mi?"@mi "+b.dataset.mi:b.dataset.warp?"@warp "+b.dataset.warp:b.dataset.copy?"@alootid +"+b.dataset.copy:null;
   if(text){const ok=await copy(text);flash(b,ok?"Copied: "+text:"Copy failed")}

@@ -167,9 +167,9 @@ for sid, d in dp_cache.items():
     for s in d.get("spawns") or []:
         if s.get("mapName"):
             spawn[s["mapName"]] = spawn.get(s["mapName"], 0) + int(s.get("quantity") or 0)
-    typ = str(d.get("type") or "").lower()
+    typ = (str(d.get("type") or "") + " " + " ".join(map(str, d.get("attributes") or []))).lower()
     mvp = 1 if mvpd or "mvp" in typ else 0
-    boss = 1 if mvp or "boss" in typ or "mini" in typ else 0
+    boss = 1 if mvp or any(w in typ for w in ("boss", "mini", "guardian")) else 0
     elem = ELEM.get(key(str(d.get("element") or "Neutral").split()[0]), "Neutral")
     mobs[mid] = [d.get("name") or f"Monster {mid}", d.get("level") or 1, mvp, sorted(spawn.items(), key=lambda x: -x[1]),
                  d.get("health") or 0, str(d.get("size") or "Small").title(), RACE.get(key(d.get("race")), "Formless"),

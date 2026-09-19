@@ -298,7 +298,7 @@ function spriteSrc(name,step){
 }
 function mDetail(id){
   const m=MOBS[id];
-  const img=m[10]?'<img alt="'+esc(m[0])+'" src="'+spriteSrc(m[10],0)+'" data-sprite="'+esc(m[10])+'" data-step="0">':'No image';
+  const img=m[10]?'<img referrerpolicy="no-referrer" alt="'+esc(m[0])+'" src="'+spriteSrc(m[10],0)+'" data-sprite="'+esc(m[10])+'" data-step="0">':'No image';
   return '<div class="mdetail"><div class="sprite">'+img+'</div><div>'+
     '<div class="stats"><div class="stat"><b>Race</b>'+lbl(m[6])+'</div><div class="stat"><b>Element</b>'+lbl(m[7])+' '+m[8]+'</div><div class="stat"><b>Size</b>'+m[5]+'</div><div class="stat"><b>HP</b>'+m[4].toLocaleString()+'</div></div>'+
     (m[2]?'<div class="subhead">MVP rewards <span>(go straight to the MVP killer\'s inventory)</span></div>'+itemRows(m[12]):'')+

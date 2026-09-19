@@ -1,5 +1,5 @@
 # Downloads rAthena renewal data and builds site/index.html
-import json, os, re, subprocess, tempfile, time, datetime, urllib.request, urllib.error, yaml
+import json, os, re, shutil, subprocess, tempfile, time, datetime, urllib.request, urllib.error, yaml
 
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 FIX = {"shadowgear": "ShadowGear", "petegg": "PetEgg", "petarmor": "PetArmor", "delayconsume": "DelayConsume"}
@@ -178,10 +178,27 @@ for sid, d in dp_cache.items():
         for iid, rate in lst:
             drops.setdefault(iid, []).append([mid, rate, kind])
 
-data = json.dumps({"items": items, "drops": drops, "mobs": mobs, "xnames": extra_names}, separators=(",", ":"), ensure_ascii=False)
+# ---- Your own names and pictures (overrides.txt)
+images = {}
+if os.path.exists("overrides.txt"):
+    for line in open("overrides.txt", encoding="utf-8"):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        parts = [x.strip() for x in line.split("|")] + ["", ""]
+        if not parts[0].isdigit() or int(parts[0]) not in mobs:
+            print(f"overrides.txt: skipped '{line.strip()}' (unknown monster ID)"); continue
+        mid = int(parts[0])
+        if parts[1]:
+            mobs[mid][0] = parts[1]
+        if parts[2]:
+            images[mid] = parts[2]
+
+data = json.dumps({"items": items, "drops": drops, "mobs": mobs, "xnames": extra_names, "img": images}, separators=(",", ":"), ensure_ascii=False)
 page = open("template.html", encoding="utf-8").read()
 page = page.replace("__DATA__", data.replace("</", "<\\/"))
 page = page.replace("__DATE__", datetime.date.today().strftime("%d %b %Y"))
 os.makedirs("site", exist_ok=True)
+if os.path.isdir("img"):
+    shutil.copytree("img", "site/img", dirs_exist_ok=True)
 open("site/index.html", "w", encoding="utf-8").write(page)
 print(f"built site/index.html: {len(items)} items, {len(mobs)} monsters, {len(page)//1024} KB")

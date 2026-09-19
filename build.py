@@ -1,16 +1,24 @@
-# Downloads rAthena renewal data and builds site/index.html
+# Downloads rAthena renewal data (+ sprite names from ROenglishRE) and builds site/index.html
 import json, os, re, subprocess, tempfile, datetime, yaml
 
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 FIX = {"shadowgear": "ShadowGear", "petegg": "PetEgg", "petarmor": "PetArmor", "delayconsume": "DelayConsume"}
 
-src = tempfile.mkdtemp()
-git = lambda *a: subprocess.run(["git", *a], cwd=src, check=True, capture_output=True)
-git("clone", "--depth", "1", "--filter=blob:none", "--sparse", "https://github.com/rathena/rathena.git", ".")
-git("sparse-checkout", "set", "--no-cone", "/db/re/item_db_*.yml", "/db/re/mob_db.yml", "/npc/re/mobs/", "/npc/re/scripts_monsters.conf")
+def sparse_clone(url, *paths):
+    d = tempfile.mkdtemp()
+    run = lambda *a: subprocess.run(["git", *a], cwd=d, check=True, capture_output=True)
+    run("clone", "--depth", "1", "--filter=blob:none", "--sparse", url, ".")
+    run("sparse-checkout", "set", "--no-cone", *paths)
+    return d
+
+src = sparse_clone("https://github.com/rathena/rathena.git",
+                   "/db/re/item_db_*.yml", "/db/re/mob_db.yml", "/npc/re/mobs/", "/npc/re/scripts_monsters.conf")
+lua = sparse_clone("https://github.com/llchrisll/ROenglishRE.git",
+                   "/Additions/data/luafiles514/lua files/datainfo/npcidentity.lub",
+                   "/Additions/data/luafiles514/lua files/datainfo/jobname.lub")
 load = lambda p: yaml.load(open(os.path.join(src, p), encoding="utf-8"), Loader=Loader).get("Body") or []
 
-# Items: [id, name, type, weight, sell]
+# ---- Items: [id, name, type, weight, sell]
 items, aegis_to_item = [], {}
 for part in ("equip", "etc", "usable"):
     for it in load(f"db/re/item_db_{part}.yml"):
@@ -23,18 +31,40 @@ for part in ("equip", "etc", "usable"):
 assert len(items) > 10000, f"only {len(items)} items, download probably broke"
 items.sort(key=lambda r: r[0])
 
-# Monsters: {id: [name, level, isMvp, [[map, count], ...]]}
+# ---- Sprite names: monster ID -> JT_ name -> sprite file name
+dinfo = os.path.join(lua, "Additions/data/luafiles514/lua files/datainfo/")
+ident = open(dinfo + "npcidentity.lub", encoding="latin-1").read()
+jobnm = open(dinfo + "jobname.lub", encoding="latin-1").read()
+id_to_jt = {int(v): k for k, v in re.findall(r"(JT_\w+)\s*=\s*(\d+)", ident)}
+jt_to_sprite = dict(re.findall(r'\[jobtbl\.(JT_\w+)\]\s*=\s*"([^"]*)"', jobnm))
+
+def sprite_of(mid, aegis):
+    jt = id_to_jt.get(mid)
+    name = jt_to_sprite.get(jt) if jt else None
+    if not name:
+        name = jt[3:] if jt else aegis
+    return name if name.isascii() else ""
+
+# ---- Monsters
+# mobs[id] = [name, level, mvp, spawns[[map,count]], hp, size, race, element, elementLevel, boss, sprite, drops[[item,rate]], mvpDrops[[item,rate]]]
 mobs, aegis_to_mob, drops = {}, {}, {}
 for m in load("db/re/mob_db.yml"):
-    mobs[m["Id"]] = [m.get("Name", m["AegisName"]), m.get("Level", 1), 1 if m.get("MvpExp") or (m.get("Modes") or {}).get("Mvp") else 0, {}]
-    aegis_to_mob[m["AegisName"].lower()] = m["Id"]
-    for kind, key in ((0, "Drops"), (1, "MvpDrops")):
+    mid = m["Id"]
+    mvp = 1 if m.get("MvpExp") or (m.get("Modes") or {}).get("Mvp") else 0
+    boss = 1 if mvp or m.get("Class") == "Boss" else 0
+    norm, mvpd = [], []
+    for kind, key, out in ((0, "Drops", norm), (1, "MvpDrops", mvpd)):
         for d in m.get(key) or []:
             iid = aegis_to_item.get(str(d["Item"]).lower())
             if iid:
-                drops.setdefault(iid, []).append([m["Id"], d["Rate"], kind])  # kind 1 = MVP reward
+                out.append([iid, d["Rate"]])
+                drops.setdefault(iid, []).append([mid, d["Rate"], kind])  # kind 1 = MVP reward
+    mobs[mid] = [m.get("Name", m["AegisName"]), m.get("Level", 1), mvp, {}, m.get("Hp", 1),
+                 m.get("Size", "Small"), m.get("Race", "Formless"), m.get("Element", "Neutral"), m.get("ElementLevel", 1),
+                 boss, sprite_of(mid, m["AegisName"]), norm, mvpd]
+    aegis_to_mob[m["AegisName"].lower()] = mid
 
-# Spawns: only files turned on in scripts_monsters.conf
+# ---- Spawns: only files turned on in scripts_monsters.conf
 conf = open(os.path.join(src, "npc/re/scripts_monsters.conf"), encoding="utf-8").read()
 for path in re.findall(r"^\s*npc:\s*(\S+)", conf, re.M):
     f = os.path.join(src, path)
@@ -50,16 +80,15 @@ for path in re.findall(r"^\s*npc:\s*(\S+)", conf, re.M):
         mid = int(key) if key.strip().isdigit() else aegis_to_mob.get(key.strip().lower())
         if mid in mobs:
             spawn = mobs[mid][3]
-            m = cols[0].split(",")[0]
-            spawn[m] = spawn.get(m, 0) + (int(amount) if amount.strip().isdigit() else 1)
+            mp = cols[0].split(",")[0]
+            spawn[mp] = spawn.get(mp, 0) + (int(amount) if amount.strip().isdigit() else 1)
+for v in mobs.values():
+    v[3] = sorted(v[3].items(), key=lambda x: -x[1])
 
-used = {d[0] for lst in drops.values() for d in lst}
-mob_out = {i: [v[0], v[1], v[2], sorted(v[3].items(), key=lambda x: -x[1])] for i, v in mobs.items() if i in used}
-
-data = json.dumps({"items": items, "drops": drops, "mobs": mob_out}, separators=(",", ":"), ensure_ascii=False)
+data = json.dumps({"items": items, "drops": drops, "mobs": mobs}, separators=(",", ":"), ensure_ascii=False)
 page = open("template.html", encoding="utf-8").read()
 page = page.replace("__DATA__", data.replace("</", "<\\/"))
 page = page.replace("__DATE__", datetime.date.today().strftime("%d %b %Y"))
 os.makedirs("site", exist_ok=True)
 open("site/index.html", "w", encoding="utf-8").write(page)
-print(f"built site/index.html: {len(items)} items, {len(drops)} dropped items, {len(mob_out)} monsters, {len(page)//1024} KB")
+print(f"built site/index.html: {len(items)} items, {len(mobs)} monsters, {len(page)//1024} KB")
